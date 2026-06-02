@@ -1,0 +1,1 @@
+# synotechnicianai.github.io
