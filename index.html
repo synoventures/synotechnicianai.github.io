@@ -35,6 +35,16 @@
         .pulse-btn {
             animation: pulse-border 2s infinite;
         }
+        /* Loading dots animation */
+        .dot {
+            animation: wave 1.2s infinite ease-in-out;
+        }
+        .dot:nth-child(2) { animation-delay: 0.1s; }
+        .dot:nth-child(3) { animation-delay: 0.2s; }
+        @keyframes wave {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
     </style>
 </head>
 <body class="h-screen w-full flex items-center justify-center p-0 m-0 overflow-hidden">
@@ -62,7 +72,7 @@
                         <br><br>
                         Kami sedia membantu membaiki laptop, komputer desktop, upgrade, servis printer dan membekalkan aksesori berkualiti.
                         <br><br>
-                        Sila pilih kategori masalah anda di bawah atau taip masalah anda terus dalam ruangan sembang.
+                        Sila pilih kategori masalah anda di bawah atau taip masalah anda terus dalam ruangan sembang. Gunakan butang <strong>✨ Diagnosis AI Pintar</strong> untuk menganalisis kerosakan secara pintar!
                     </p>
                 </div>
             </div>
@@ -107,15 +117,22 @@
     </div>
 
     <script>
+        // Set API Key (Penyediaan automatik runtime)
+        const apiKey = "";
         const WHATSAPP_NUMBER = "601174407112";
         const chatHistory = document.getElementById('chat-history');
         const optionsButtons = document.getElementById('options-buttons');
         const currentMenuLabel = document.getElementById('current-menu');
         const userInput = document.getElementById('user-input');
 
+        // State variables
+        let currentLevel = "main"; // "main", sub-category id, or "ai_active"
+        let isAiMode = false;
+
         // Data Servis Synotech Batu Buruk
         const serviceData = {
             main: [
+                { id: "ai_diagnose", label: "✨ Diagnosis AI Pintar", icon: "🤖" },
                 { id: "repair", label: "🛠️ Repair & Diagnostik", icon: "🔧" },
                 { id: "upgrade", label: "⚡ Upgrade & Windows", icon: "🚀" },
                 { id: "maintenance", label: "🧹 Cuci & Servis Habuk", icon: "🧼" },
@@ -197,7 +214,7 @@
             }
         };
 
-        // Kamus Kata Kunci Tempatan untuk Carian Teks (Smart NLP)
+        // Kamus Kata Kunci Tempatan untuk Carian Teks (Smart NLP Fallback)
         const keywordDatabase = [
             { keywords: ["slow", "lembab", "laju", "ssd", "ram", "upgrade", "tambah", "pantas"], category: "upgrade", advice: "Masalah komputer lembab biasanya berpunca daripada penggunaan hard disk lama (HDD) atau RAM yang tidak mencukupi. Kami amat menyarankan upgrade ke SSD dan tambah RAM untuk peningkatan kelajuan sehingga 10 kali ganda!" },
             { keywords: ["format", "windows", "reinstall", "sistem", "os", "operating system"], category: "upgrade", advice: "Sistem operasi yang korup atau sudah lama boleh menyebabkan komputer tidak stabil. Kami menyediakan servis format & reinstall Windows bersih berserta software asas." },
@@ -209,9 +226,6 @@
             { keywords: ["beli", "harga", "laptop baru", "second", "refurbished", "terpakai", "aksesori", "mouse", "keyboard"], category: "jualan", advice: "Kami ada menjual pelbagai pilihan laptop baru, laptop terpakai berkualiti (refurbished), komputer desktop, dan aksesori gajet pada harga yang sangat berpatutan." }
         ];
 
-        // State variables
-        let currentLevel = "main"; // "main" or sub-category id
-
         // Inisialisasi Bot
         function initBot() {
             renderMainOptions();
@@ -222,14 +236,43 @@
             currentMenuLabel.innerText = "Kategori Utama";
             optionsButtons.innerHTML = "";
             currentLevel = "main";
+            isAiMode = false;
 
             serviceData.main.forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "bg-[#f0f0f0] hover:bg-[#294582] hover:text-white border border-[#294582]/20 text-[#294582] rounded-xl transition-all duration-200 text-xs font-semibold py-2 px-3 shadow-sm flex items-center gap-1 active:scale-95";
+                // Beri penekanan khusus kepada butang AI
+                if (opt.id === "ai_diagnose") {
+                    btn.className = "bg-gradient-to-r from-blue-700 to-[#294582] hover:from-blue-800 hover:to-indigo-900 text-white rounded-xl transition-all duration-200 text-xs font-bold py-2.5 px-3.5 shadow-md flex items-center gap-1.5 active:scale-95 border-0 pulse-btn";
+                } else {
+                    btn.className = "bg-[#f0f0f0] hover:bg-[#294582] hover:text-white border border-[#294582]/20 text-[#294582] rounded-xl transition-all duration-200 text-xs font-semibold py-2 px-3 shadow-sm flex items-center gap-1 active:scale-95";
+                }
                 btn.innerHTML = `${opt.label}`;
-                btn.onclick = () => selectCategory(opt.id);
+                btn.onclick = () => {
+                    if (opt.id === "ai_diagnose") {
+                        startAiMode();
+                    } else {
+                        selectCategory(opt.id);
+                    }
+                };
                 optionsButtons.appendChild(btn);
             });
+        }
+
+        // Mulakan Mod AI Pintar
+        function startAiMode() {
+            currentMenuLabel.innerText = "Diagnosis AI Aktif ✨";
+            optionsButtons.innerHTML = "";
+            currentLevel = "ai_active";
+            isAiMode = true;
+
+            // Butang kembali ke menu utama
+            const backBtn = document.createElement('button');
+            backBtn.className = "bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl transition-all duration-200 text-xs font-bold py-2 px-3 shadow-sm active:scale-95";
+            backBtn.innerHTML = "🔙 Menu Utama";
+            backBtn.onclick = renderMainOptions;
+            optionsButtons.appendChild(backBtn);
+
+            appendMessage('bot', "🤖 <strong>Mod Diagnosis AI Pintar Aktif!</strong><br><br>Sila taip secara terperinci apa yang berlaku kepada laptop/komputer anda dalam ruang sembang di bawah (contoh: <em>'laptop saya mati tiba-tiba lepas dengar bunyi meletup'</em>). Enjin AI akan menganalisis secara langsung.");
         }
 
         // Apabila kategori dipilih
@@ -240,6 +283,7 @@
             currentMenuLabel.innerText = category.title;
             optionsButtons.innerHTML = "";
             currentLevel = catId;
+            isAiMode = false;
 
             // Tambah butang "Kembali ke Menu Utama"
             const backBtn = document.createElement('button');
@@ -294,6 +338,67 @@
             chatHistory.appendChild(bubble);
             // Auto scroll down smoothly
             chatHistory.scrollTop = chatHistory.scrollHeight;
+            return bubble;
+        }
+
+        // Tampilkan Loading Indicator Semasa AI Berfikir
+        function appendLoadingIndicator() {
+            const bubble = document.createElement('div');
+            bubble.className = "flex items-start gap-2.5";
+            bubble.id = "ai-loading-bubble";
+            bubble.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-[#294582] flex items-center justify-center text-white shrink-0 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4.5 h-4.5 animate-spin">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                </div>
+                <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 border border-[#294582]/10 bg-white/80 rounded-2xl rounded-tl-none shadow-sm">
+                    <p class="text-sm font-semibold text-[#294582] mb-1">Synotech AI Assistant</p>
+                    <div class="flex items-center gap-1 text-xs text-slate-500">
+                        <span>Menjalankan diagnosis komputer anda secara langsung</span>
+                        <span class="inline-flex gap-0.5">
+                            <span class="dot w-1 h-1 bg-slate-500 rounded-full"></span>
+                            <span class="dot w-1 h-1 bg-slate-500 rounded-full"></span>
+                            <span class="dot w-1 h-1 bg-slate-500 rounded-full"></span>
+                        </span>
+                    </div>
+                </div>
+            `;
+            chatHistory.appendChild(bubble);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            return bubble;
+        }
+
+        // Mengintegrasikan panggilan ke Gemini API dengan Eksponensial Backoff
+        async function fetchGeminiDiagnosis(userQuery) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const systemPrompt = "Anda adalah pakar IT dan asisten pelanggan profesional dari 'Synotech Batu Buruk' (sebuah bengkel servis komputer/laptop di Terengganu, Malaysia). Tugasan utama anda adalah menganalisis aduan kerosakan dari pelanggan. Berikan penjelasan ringkas punca masalah (jangan terlalu panjang lebar) dan senaraikan cadangan solusi (cth: tukar SSD, cuci kipas, repair motherboard, tambah RAM). Sila gunakan Bahasa Melayu yang mesra tetapi sopan. Akhiri jawapan dengan menyuruh mereka menekan butang WhatsApp di bawah untuk mengesahkan slot pemeriksaan diagnostik fizikal di kedai.";
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            let delay = 1000;
+            // Eksponensial Backoff up to 5 retries
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    }
+                } catch (e) {
+                    // Fail secara senyap untuk mencuba semula
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+            throw new Error("Terdapat masalah sambungan semasa menghubungi enjin AI. Anda boleh klik WhatsApp secara terus!");
         }
 
         // Apabila sub-servis dipilih oleh pelanggan
@@ -340,8 +445,8 @@
             return `${baseUrl}?text=${encodeURIComponent(fullText)}`;
         }
 
-        // Mengendali Teks yang Ditaip Pengguna (Smart Local NLP)
-        function handleFormSubmit(event) {
+        // Mengendali Teks yang Ditaip Pengguna (Smart Local NLP + Gemini API)
+        async function handleFormSubmit(event) {
             event.preventDefault();
             const text = userInput.value.trim();
             if (!text) return;
@@ -352,61 +457,101 @@
             // Papar mesej pengguna
             appendMessage('user', text);
 
-            // Cari padanan kata kunci
-            let matchedCategory = null;
-            let matchedAdvice = "";
-            const lowerText = text.toLowerCase();
+            // Masukkan indikator loading AI
+            const loadingBubble = appendLoadingIndicator();
 
-            for (let i = 0; i < keywordDatabase.length; i++) {
-                const entry = keywordDatabase[i];
-                const hasKeyword = entry.keywords.some(keyword => lowerText.includes(keyword));
-                if (hasKeyword) {
-                    matchedCategory = entry.category;
-                    matchedAdvice = entry.advice;
-                    break;
-                }
-            }
+            if (isAiMode) {
+                // Gunakan Gemini API untuk diagnosis mendalam
+                try {
+                    const aiDiagnosis = await fetchGeminiDiagnosis(text);
+                    
+                    // Padamkan loading
+                    if (loadingBubble) loadingBubble.remove();
 
-            // Simulasikan bot memproses/menaip
-            setTimeout(() => {
-                if (matchedCategory) {
-                    // Berjaya jumpa padanan masalah
-                    const waUrl = createWhatsAppUrl(text);
+                    const waUrl = createWhatsAppUrl(`Laporan Diagnostik AI:\n- Masalah: ${text}\n- Ringkasan Solusi: ${aiDiagnosis.substring(0, 300)}...`);
+                    
                     const botResponse = `
-                        Saya faham masalah anda.<br><br>
-                        💡 <strong>Cadangan AI Synotech:</strong><br>
-                        ${matchedAdvice}<br><br>
-                        Sila klik butang di bawah untuk menghantar mesej rujukan masalah anda ("<em>${text}</em>") terus ke juruteknik kami di WhatsApp untuk semakan lanjut.
+                        ✨ <strong>Keputusan Diagnostik Pintar:</strong><br><br>
+                        ${aiDiagnosis.replace(/\n/g, '<br>')}<br><br>
                         <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
                             </svg>
-                            Bincang di WhatsApp Sekarang
-                        </a>
-                    `;
-                    appendMessage('bot', botResponse, true);
-
-                    // Sediakan cadangan butang pantas yang sepadan dengan kategori masalah dikesan
-                    selectCategory(matchedCategory);
-
-                } else {
-                    // Jika tidak jumpa padanan kata kunci tertentu
-                    const waUrl = createWhatsAppUrl(text);
-                    const botResponse = `
-                        Terima kasih atas mesej anda.<br><br>
-                        Pertanyaan anda mengenai "<em>${text}</em>" sedia untuk dirujuk ke bahagian sokongan teknikal Synotech.<br><br>
-                        Sila klik butang di bawah untuk terus menghantar soalan ini secara langsung ke WhatsApp kami di <strong>+601174407112</strong>.
-                        <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
-                            </svg>
-                            Teruskan ke WhatsApp
+                            Tempah Slot Temujanji WhatsApp
                         </a>
                     `;
                     appendMessage('bot', botResponse, true);
                     offerResetOption();
+
+                } catch (error) {
+                    if (loadingBubble) loadingBubble.remove();
+                    
+                    // Fallback jika API gagal
+                    const waUrl = createWhatsAppUrl(text);
+                    const fallbackResponse = `
+                        Maaf, kami menghadapi kesukaran memproses dengan enjin AI ketika ini.<br><br>
+                        Namun, anda boleh terus menghantar kerosakan "<strong>${text}</strong>" ke WhatsApp kami untuk disemak oleh juruteknik fizikal.
+                        <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                            Hantar Terus ke WhatsApp
+                        </a>
+                    `;
+                    appendMessage('bot', fallbackResponse, true);
+                    offerResetOption();
                 }
-            }, 600);
+            } else {
+                // Guna Smart Local NLP sebagai tapisan asas terpantas sebelum ini
+                let matchedCategory = null;
+                let matchedAdvice = "";
+                const lowerText = text.toLowerCase();
+
+                for (let i = 0; i < keywordDatabase.length; i++) {
+                    const entry = keywordDatabase[i];
+                    const hasKeyword = entry.keywords.some(keyword => lowerText.includes(keyword));
+                    if (hasKeyword) {
+                        matchedCategory = entry.category;
+                        matchedAdvice = entry.advice;
+                        break;
+                    }
+                }
+
+                setTimeout(() => {
+                    if (loadingBubble) loadingBubble.remove();
+
+                    if (matchedCategory) {
+                        const waUrl = createWhatsAppUrl(text);
+                        const botResponse = `
+                            Saya faham masalah anda.<br><br>
+                            💡 <strong>Cadangan AI Synotech:</strong><br>
+                            ${matchedAdvice}<br><br>
+                            Sila klik butang di bawah untuk menghantar mesej rujukan masalah anda ("<em>${text}</em>") terus ke juruteknik kami di WhatsApp untuk semakan lanjut.
+                            <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
+                                </svg>
+                                Bincang di WhatsApp Sekarang
+                            </svg>
+                        `;
+                        appendMessage('bot', botResponse, true);
+                        selectCategory(matchedCategory);
+                    } else {
+                        // Tiada kata kunci padan, tawarkan terus menghantar ke WhatsApp
+                        const waUrl = createWhatsAppUrl(text);
+                        const botResponse = `
+                            Terima kasih atas mesej anda.<br><br>
+                            Pertanyaan anda mengenai "<em>${text}</em>" sedia untuk dirujuk ke bahagian sokongan teknikal Synotech.<br><br>
+                            Sila klik butang di bawah untuk terus menghantar soalan ini secara langsung ke WhatsApp kami di <strong>+601174407112</strong>.
+                            <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
+                                </svg>
+                                Teruskan ke WhatsApp
+                            </svg>
+                        `;
+                        appendMessage('bot', botResponse, true);
+                        offerResetOption();
+                    }
+                }, 600);
+            }
         }
 
         // Jalankan bot sebaik sahaja laman selesai dimuatkan
