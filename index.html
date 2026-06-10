@@ -1,770 +1,407 @@
 <!DOCTYPE html>
-<html lang="ms" class="scroll-smooth">
+<html lang="ms">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synotech AI Technician Diagnostic Helper</title>
+    <title>Synotech Chatbot Widget</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Icons -->
+    <!-- Font Awesome untuk Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        syno: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            900: '#0c4a6e',
-                            dark: '#0B132B',
-                            darker: '#010409',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d7e1ec 100%);
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
         }
-        /* Custom scrollbar for chat */
-        .chat-scroll::-webkit-scrollbar {
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(41, 69, 130, 0.15);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
-        .chat-scroll::-webkit-scrollbar-track {
-            background: transparent;
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(240, 240, 240, 0.5);
+            border-radius: 10px;
         }
-        .chat-scroll::-webkit-scrollbar-thumb {
-            background-color: rgba(156, 163, 175, 0.3);
-            border-radius: 20px;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(41, 69, 130, 0.3);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(41, 69, 130, 0.5);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            animation: fadeInUp 0.3s ease-out forwards;
+        }
+
+        /* Custom Colors Theme */
+        .bg-synotech-main {
+            background-color: #294582;
+        }
+        .text-synotech-main {
+            color: #294582;
+        }
+        .border-synotech-main {
+            borderColor: #294582;
+        }
+        .bg-synotech-secondary {
+            background-color: #f0f0f0;
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col transition-colors duration-300 dark:bg-syno-darker dark:text-slate-100">
+<body class="flex items-center justify-center p-4">
 
-    <!-- Navbar -->
-    <header class="sticky top-0 z-40 w-full backdrop-blur border-b border-slate-200/80 bg-white/80 dark:bg-syno-dark/80 dark:border-slate-800/80">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-syno-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-syno-500/20">
-                    <i class="fa-solid fa-microchip text-lg animate-pulse"></i>
+    <!-- Preview Container (Mimicking a Website Page) -->
+    <div class="absolute inset-0 z-0 flex flex-col justify-between p-6 md:p-12 pointer-events-none">
+        <div>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-[#294582] opacity-80">Synotech IT Solutions</h1>
+            <p class="text-md md:text-lg text-gray-600 mt-2">"Professional Service, The Best Solutions."</p>
+        </div>
+        <div class="text-xs text-gray-400">
+            Hosted on GitHub Pages • Touch Friendly Interface • Built for WhatsApp Integration
+        </div>
+    </div>
+
+    <!-- Chat Widget Container -->
+    <div id="chat-widget" class="relative z-10 w-full max-w-md h-[90vh] md:h-[650px] glass-panel rounded-3xl overflow-hidden flex flex-col pointer-events-auto transition-all duration-300">
+        
+        <!-- Chat Header -->
+        <div class="bg-synotech-main p-4 flex items-center justify-between text-white shadow-md">
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center text-synotech-main font-bold text-xl shadow-inner">
+                        S
+                    </div>
+                    <span class="bottom-0 right-0 absolute w-3 h-3 bg-green-400 border-2 border-synotech-main rounded-full"></span>
                 </div>
                 <div>
-                    <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-syno-500 to-indigo-500 bg-clip-text text-transparent">SYNOTECH</span>
-                    <span class="text-xs block text-slate-500 dark:text-slate-400 font-medium">Diagnostic Assistant</span>
+                    <h2 class="font-bold text-base leading-tight">Synotech Support Bot</h2>
+                    <p class="text-xs text-green-200">Online • Sedia Membantu</p>
                 </div>
             </div>
-            
-            <div class="flex items-center gap-3">
-                <!-- Theme Toggle -->
-                <button id="theme-toggle" class="p-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-all" title="Tukar Tema">
-                    <i id="theme-icon" class="fa-solid fa-moon"></i>
-                </button>
-                
-                <!-- API Settings Button -->
-                <button id="btn-settings" class="p-2.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-all flex items-center gap-2" title="Tetapan API">
-                    <i class="fa-solid fa-gear"></i>
-                    <span class="text-sm font-semibold hidden sm:inline">Set API Key</span>
+            <div class="flex items-center space-x-3">
+                <button onclick="resetChat()" class="text-white hover:text-gray-200 p-2 rounded-full transition-colors" title="Restart Chat">
+                    <i class="fa-solid fa-arrows-rotate"></i>
                 </button>
             </div>
         </div>
-    </header>
 
-    <!-- Main Workspace -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-6">
-        
-        <!-- Left Sidebar: Info & Quick Diagnostic -->
-        <section class="w-full lg:w-1/3 flex flex-col gap-6">
-            <!-- Welcome Card -->
-            <div class="bg-white dark:bg-syno-dark rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800 shadow-sm relative overflow-hidden">
-                <div class="absolute -right-8 -top-8 w-32 h-32 bg-syno-500/10 rounded-full blur-2xl pointer-events-none"></div>
-                <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
-                    Ada Masalah <br><span class="text-syno-500">Laptop atau Telefon?</span>
-                </h1>
-                <p class="mt-3 text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-                    Selamat datang ke pembantu diagnostik AI rasmi <strong>Synotech</strong>. AI kami bersedia membantu anda mengenalpasti punca kerosakan dan menyediakan anggaran bajet serta draf WhatsApp terus ke kedai.
-                </p>
-                <div class="mt-5 p-3.5 bg-syno-50 dark:bg-slate-800/50 rounded-xl border border-syno-100 dark:border-slate-700/50 flex items-start gap-3">
-                    <i class="fa-solid fa-circle-info text-syno-500 mt-0.5"></i>
-                    <p class="text-xs text-slate-600 dark:text-slate-400">
-                        Selepas selesai diagnosis, gunakan butang <strong>pilihan kecerdasan buatan</strong> di bawah ruangan sembang untuk draf harga atau menghantar laporan ke WhatsApp.
-                    </p>
+        <!-- Chat Area (Messages) -->
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto custom-scrollbar flex flex-col space-y-3 bg-[rgba(240,240,240,0.3)]">
+            <!-- Initial Welcome Message -->
+            <div class="flex items-start space-x-2 animate-fade-in">
+                <div class="w-8 h-8 rounded-full bg-synotech-main text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">
+                    S
+                </div>
+                <div class="glass-card text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm">
+                    <p class="font-semibold text-synotech-main mb-1">Hai! Selamat datang ke Synotech! 👋</p>
+                    <p class="mb-2">Kami sedia membantu membaiki, menaik taraf, dan menjaga peranti IT anda.</p>
+                    <p class="text-xs font-medium text-gray-500 italic">"Professional Service, The Best Solutions."</p>
                 </div>
             </div>
 
-            <!-- Quick Diagnostics -->
-            <div class="bg-white dark:bg-syno-dark rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800 shadow-sm">
-                <h2 class="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-bolt-lightning text-amber-500"></i> Diagnosis Pantas
-                </h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Pilih jenis masalah di bawah untuk memulakan diagnosis dengan cepat:</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
-                    <button class="quick-btn text-left p-3 rounded-xl border border-slate-200 hover:border-syno-500 dark:border-slate-800 dark:hover:border-syno-500 hover:bg-syno-50/50 dark:hover:bg-syno-500/5 transition-all flex items-center gap-3 group text-sm font-medium" data-problem="Laptop saya sangat lambat sejak kebelakangan ini dan kadang-kadang ada 'blue screen'.">
-                        <span class="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                            <i class="fa-solid fa-gauge-high"></i>
-                        </span>
-                        <span>Laptop Lambat / Lagging</span>
-                    </button>
-                    
-                    <button class="quick-btn text-left p-3 rounded-xl border border-slate-200 hover:border-syno-500 dark:border-slate-800 dark:hover:border-syno-500 hover:bg-syno-50/50 dark:hover:bg-syno-500/5 transition-all flex items-center gap-3 group text-sm font-medium" data-problem="Skrin laptop/telefon saya pecah atau tiada paparan keluar (skrin hitam).">
-                        <span class="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                            <i class="fa-solid fa-desktop"></i>
-                        </span>
-                        <span>Skrin Pecah / Rosak</span>
-                    </button>
-
-                    <button class="quick-btn text-left p-3 rounded-xl border border-slate-200 hover:border-syno-500 dark:border-slate-800 dark:hover:border-syno-500 hover:bg-syno-50/50 dark:hover:bg-syno-500/5 transition-all flex items-center gap-3 group text-sm font-medium" data-problem="Telefon pintar saya langsung tidak boleh dihidupkan (mati total) atau tak mahu masuk caj.">
-                        <span class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                            <i class="fa-solid fa-battery-slash"></i>
-                        </span>
-                        <span>Telefon Mati / Tak Cas</span>
-                    </button>
-
-                    <button class="quick-btn text-left p-3 rounded-xl border border-slate-200 hover:border-syno-500 dark:border-slate-800 dark:hover:border-syno-500 hover:bg-syno-50/50 dark:hover:bg-syno-500/5 transition-all flex items-center gap-3 group text-sm font-medium" data-problem="Sistem Windows saya sangkut di 'Automatic Repair' atau asyik restart sendiri.">
-                        <span class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                            <i class="fa-brands fa-windows"></i>
-                        </span>
-                        <span>Windows Boot Loop</span>
-                    </button>
+            <div class="flex items-start space-x-2 animate-fade-in">
+                <div class="w-8 h-8 rounded-full bg-synotech-main text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">
+                    S
+                </div>
+                <div class="glass-card text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm">
+                    Sila pilih kategori perkhidmatan yang anda perlukan di bahagian menu bawah 👇
                 </div>
             </div>
+        </div>
+
+        <!-- Sticky Interaction Zone (Always at the bottom for easy access) -->
+        <div class="p-3 bg-[rgba(240,240,240,0.85)] border-t border-[rgba(255,255,255,0.5)] flex flex-col space-y-2">
             
-            <!-- Contact Shop Info -->
-            <div class="bg-white dark:bg-syno-dark rounded-2xl p-5 border border-slate-200/60 dark:border-slate-800 shadow-sm text-xs text-slate-500 dark:text-slate-400">
-                <p class="font-bold text-slate-800 dark:text-slate-200 text-sm mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-store text-syno-500"></i> Info Kedai Synotech
-                </p>
-                <div class="space-y-2">
-                    <p><i class="fa-solid fa-location-dot w-4 text-syno-500"></i> Kuala Terengganu, Terengganu, Malaysia</p>
-                    <p><i class="fa-solid fa-clock w-4 text-syno-500"></i> 10:00 AM - 9:00 PM (Sabtu - Khamis)</p>
-                    <p><i class="fa-solid fa-phone w-4 text-syno-500"></i> +6011-55551234</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Right: Chat Area -->
-        <section class="flex-1 flex flex-col bg-white dark:bg-syno-dark rounded-2xl border border-slate-200/60 dark:border-slate-800 shadow-sm overflow-hidden h-[650px] sm:h-[700px] lg:h-[750px]">
-            
-            <!-- Chat Header -->
-            <div class="p-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-800/20 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="relative">
-                        <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-syno-500 flex items-center justify-center">
-                            <i class="fa-solid fa-robot text-syno-500 text-lg"></i>
-                        </div>
-                        <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-syno-dark rounded-full"></span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-slate-900 dark:text-white">AI Tech Helper (Synotech)</h3>
-                        <p class="text-xs text-slate-500 dark:text-slate-400" id="api-status">Mod: Simulasi Pintar (Tiada Kunci API)</p>
-                    </div>
-                </div>
-                <div>
-                    <button id="btn-clear" class="text-xs text-slate-500 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 font-medium flex items-center gap-1 transition-colors" title="Kosongkan Chat">
-                        <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline">Reset</span>
-                    </button>
-                </div>
+            <!-- Quick Options / Selection Chips Container -->
+            <div id="options-container" class="max-h-[180px] overflow-y-auto custom-scrollbar flex flex-col space-y-1.5 py-1">
+                <!-- Dynamically filled with options -->
             </div>
 
-            <!-- Chat Messages Box -->
-            <div id="chat-container" class="flex-1 p-4 overflow-y-auto chat-scroll space-y-4 bg-slate-50/30 dark:bg-slate-950/20">
-                <!-- Initial Bot Message -->
-                <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 rounded-full bg-syno-500 text-white flex items-center justify-center flex-shrink-0 text-sm">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3.5 rounded-2xl rounded-tl-none shadow-sm max-w-[85%] text-sm leading-relaxed">
-                        <p class="font-semibold text-xs text-syno-500 mb-1">AI TECHNICIAN</p>
-                        Hai! Saya <strong>Pembantu AI Synotech</strong>. Saya sedia membantu anda mendiagnosis masalah perkakasan komputer, laptop, atau telefon pintar anda.
-                        <br><br>
-                        Sila jelaskan kerosakan atau tanda-tanda yang dialami oleh peranti anda, atau klik salah satu <strong>Diagnosis Pantas</strong> di sebelah kiri.
-                    </div>
+            <!-- Action Input / Custom Message Box -->
+            <div class="flex items-center space-x-2 mt-1">
+                <div class="flex-1 relative">
+                    <input type="text" id="custom-msg-input" 
+                           placeholder="Atau tulis soalan/masalah anda di sini..." 
+                           class="w-full px-4 py-2.5 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#294582] text-sm bg-white shadow-inner"
+                           onkeypress="handleKeyPress(event)">
                 </div>
-            </div>
-
-            <!-- Enhanced Action Deck (Dynamically Displayed when diagnosis exists) -->
-            <div id="cta-area" class="px-4 py-4 bg-gradient-to-tr from-slate-50 to-blue-50/30 dark:from-slate-950/30 dark:to-slate-900/10 border-t border-slate-200 dark:border-slate-800 hidden">
-                <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                    ✨ Tindakan Pintar Diagnostik AI
-                </p>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <!-- Cost Estimator Trigger -->
-                    <button id="btn-estimate-cost" class="px-3 py-2.5 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-300 border border-sky-100 dark:border-sky-900/30 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-tag"></i> ✨ Anggaran Kos & Tempoh
-                    </button>
-                    <!-- DIY Guide Trigger -->
-                    <button id="btn-diy-guide" class="px-3 py-2.5 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900/30 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-wrench"></i> ✨ Panduan DIY Selamat
-                    </button>
-                    <!-- Custom WhatsApp Draft -->
-                    <button id="btn-draft-wa" class="px-3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/15 transition-all flex items-center justify-center gap-1.5">
-                        <i class="fa-brands fa-whatsapp text-sm"></i> ✨ Draf Mesej WhatsApp Pintar
-                    </button>
-                </div>
-            </div>
-
-            <!-- Input Area -->
-            <form id="chat-form" class="p-4 border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-syno-dark flex items-center gap-2">
-                <input type="text" id="user-input" placeholder="Tuliskan masalah peranti anda di sini..." class="flex-1 bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-syno-500 focus:bg-white dark:focus:bg-slate-900 px-4 py-3 rounded-xl text-sm focus:outline-none transition-all dark:text-white" required>
-                <button type="submit" id="btn-send" class="h-11 w-11 rounded-xl bg-syno-500 hover:bg-syno-600 text-white flex items-center justify-center transition-all shadow-md shadow-syno-500/10 flex-shrink-0" title="Hantar">
+                <button onclick="sendCustomMessage()" 
+                        class="bg-synotech-main hover:bg-[#1d3363] text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-all active:scale-95 shrink-0">
                     <i class="fa-solid fa-paper-plane text-sm"></i>
                 </button>
-            </form>
-        </section>
-    </main>
-
-    <!-- Settings Modal -->
-    <div id="modal-settings" class="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-syno-dark rounded-2xl border border-slate-200 dark:border-slate-800 max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-key text-syno-500"></i> Tetapan Gemini API Key
-                </h3>
-                <button id="btn-close-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-white">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
             </div>
-            <div class="p-5 space-y-4">
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Masukkan Gemini API Key anda untuk membolehkan diagnosis AI yang dinamik dan tepat daripada Google Gemini. Kunci API ini hanya disimpan secara lokal dalam pelayar anda.
-                </p>
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2">GEMINI API KEY:</label>
-                    <div class="relative">
-                        <input type="password" id="input-api-key" placeholder="AIzaSy..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-syno-500 rounded-xl px-4 py-3 text-sm focus:outline-none dark:text-white pr-10">
-                        <button type="button" id="btn-toggle-key" class="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
-                            <i class="fa-solid fa-eye" id="eye-icon"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-900/30 flex items-start gap-2.5">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5 text-xs"></i>
-                    <p class="text-[11px] text-amber-800 dark:text-amber-400 leading-normal">
-                        <strong>Nota:</strong> Jika anda mengosongkan bahagian ini, bot akan menggunakan mod simulasi berasaskan kata kunci asas untuk memberikan panduan umum.
-                    </p>
-                </div>
-                
-                <div class="pt-2">
-                    <label class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-2">NOMBOR WHATSAPP KEDAI (CTA):</label>
-                    <input type="text" id="input-shop-phone" placeholder="601155551234" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-syno-500 rounded-xl px-4 py-3 text-sm focus:outline-none dark:text-white">
-                    <p class="text-[10px] text-slate-400 mt-1">Sila masukkan kod negara (cth: 601155551234 untuk Malaysia).</p>
-                </div>
-            </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2">
-                <button id="btn-save-settings" class="px-5 py-2 bg-syno-500 hover:bg-syno-600 text-white text-sm font-bold rounded-xl transition-all">
-                    Simpan Tetapan
-                </button>
+            
+            <div class="text-center text-[10px] text-gray-500 flex justify-center items-center gap-1">
+                <i class="fa-brands fa-whatsapp text-green-600"></i> Pilihan anda akan dihantar terus ke WhatsApp Synotech
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification System -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-500"></i>
-        <span id="toast-text" class="text-xs font-medium">Tetapan disimpan!</span>
-    </div>
-
-    <!-- Footer -->
-    <footer class="bg-white dark:bg-syno-darker border-t border-slate-200 dark:border-slate-800/60 py-6 text-center text-xs text-slate-400 mt-auto">
-        <div class="max-w-7xl mx-auto px-4">
-            <p>&copy; 2026 Synotech. Semua Hak Cipta Terpelihara. Dikuasakan oleh Google Gemini AI.</p>
-        </div>
-    </footer>
-
-    <!-- Core App Logic -->
     <script>
-        // DOM Elements
-        const themeToggle = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-        const btnSettings = document.getElementById('btn-settings');
-        const modalSettings = document.getElementById('modal-settings');
-        const btnCloseModal = document.getElementById('btn-close-modal');
-        const btnSaveSettings = document.getElementById('btn-save-settings');
-        const inputApiKey = document.getElementById('input-api-key');
-        const inputShopPhone = document.getElementById('input-shop-phone');
-        const btnToggleKey = document.getElementById('btn-toggle-key');
-        const eyeIcon = document.getElementById('eye-icon');
-        const apiStatus = document.getElementById('api-status');
+        const WHATSAPP_NUMBER = "601174407112";
         
-        const chatForm = document.getElementById('chat-form');
-        const userInput = document.getElementById('user-input');
-        const chatContainer = document.getElementById('chat-container');
-        const btnClear = document.getElementById('btn-clear');
-        const ctaArea = document.getElementById('cta-area');
-        
-        // Dynamic Action Deck Buttons
-        const btnEstimateCost = document.getElementById('btn-estimate-cost');
-        const btnDiyGuide = document.getElementById('btn-diy-guide');
-        const btnDraftWa = document.getElementById('btn-draft-wa');
-        
-        const quickBtns = document.querySelectorAll('.quick-btn');
-        const toast = document.getElementById('toast');
-        const toastText = document.getElementById('toast-text');
-        const toastIcon = document.getElementById('toast-icon');
+        // Synotech Service Data Structure
+        const servicesData = {
+            main: [
+                { id: "servis_baik_pulih", text: "🛠️ Servis Baik Pulih & Diagnostik", next: "baik_pulih" },
+                { id: "upgrade_prestasi", text: "⚡ Upgrade & Prestasi Peranti", next: "upgrade" },
+                { id: "penyelenggaraan", text: "🧹 Servis Penyelenggaraan (Cleaning)", next: "penyelenggaraan" },
+                { id: "data_software", text: "💾 Data & Perisian (Software)", next: "data_software" },
+                { id: "networking_support", text: "🌐 Networking & IT Support", next: "networking" },
+                { id: "printer_services", text: "🖨️ Servis Printer & Percetakan", next: "printer" },
+                { id: "jualan_peranti", text: "💻 Jualan Peranti & Aksesori", next: "jualan" },
+                { id: "pemeriksaan_nasihat", text: "📋 Pemeriksaan & Nasihat", next: "nasihat" }
+            ],
+            baik_pulih: [
+                { text: "💻 Repair Laptop", waText: "Saya berminat untuk dapatkan servis Repair Laptop" },
+                { text: "🖥️ Repair Komputer Desktop", waText: "Saya berminat untuk dapatkan servis Repair Komputer Desktop" },
+                { text: "🔍 Diagnostik Kerosakan", waText: "Saya memerlukan servis Diagnostik Kerosakan untuk peranti saya" },
+                { text: "🛠️ Troubleshoot Masalah Hardware & Software", waText: "Saya mahu troubleshoot masalah Hardware / Software komputer" },
+                { text: "🔌 Repair Motherboard (Tertakluk Kes)", waText: "Saya ingin bertanya berkenaan servis Repair Motherboard" },
+                { text: "❌ Baik Pulih Laptop Tak Boleh ON", waText: "Laptop saya tidak boleh ON. Mohon bantuan baik pulih" },
+                { text: "🔥 Penyelesaian Overheating", waText: "Peranti saya selalu panas (overheating). Mohon bantuan selesaikan" },
+                { text: "⬅️ Kembali ke Menu Utama", isBack: true }
+            ],
+            upgrade: [
+                { text: "🚀 Upgrade SSD", waText: "Saya ingin upgrade SSD pada peranti saya untuk kelajuan maksimum" },
+                { text: "📊 Upgrade RAM", waText: "Saya berminat untuk upgrade RAM peranti saya" },
+                { text: "💿 Pemasangan Semula Windows", waText: "Saya ingin membuat pemasangan semula sistem operasi Windows" },
+                { text: "⚙️ Optimasi Prestasi Komputer", waText: "Komputer saya perlahan, saya perlukan servis Optimasi Prestasi" },
+                { text: "🧼 Format & Reinstall OS", waText: "Saya perlukan servis Format & Reinstall OS" },
+                { text: "⬅️ Kembali ke Menu Utama", isBack: true }
+            ],
+            penyelenggaraan: [
+                { text: "🧼 Servis Pembersihan Dalaman Laptop", waText: "Saya ingin dapatkan Servis Pembersihan Dalaman Laptop" },
+                { text: "💨 Vacuum Habuk", waText: "Saya perlukan servis Vacuum Habuk di dalam laptop/PC saya" },
+                { text: "🌡️ Tukar Thermal Paste", waText: "Saya mahu tukar Thermal Paste untuk laptop/PC" },
+                { text: "🌀 Servis Kipas (Fan Cleaning)", waText: "Kipas laptop/PC saya bising/kotor, saya mahu servis fan cleaning" },
+                { text: "🩺 Pemeriksaan Kesihatan Komputer", waText: "Saya mahu lakukan Pemeriksaan Kesihatan Komputer secara menyeluruh" },
+                { text: "⬅️ Kembali ke Menu Utama", isBack: true }
+            ],
+            data_software: [
+                { text: "🗄️ Backup Data", waText: "Saya mahu lakukan Backup Data penting saya" },
+                { text: "🔄 Pemindahan Data (Migration)", waText: "Saya memerlukan servis Pemindahan Data ke peranti baru" },
+                { text: "📥 Pemasangan Software", waText: "Saya ingin memasang perisian/software pada PC/laptop" },
+                { text: "💼 Konfigurasi Aplikasi Pejabat", waText: "Saya mahu konfigurasi aplikasi pejabat (Office dll)" },
+                { text: "🛡️ Pembuangan Virus & Malware", waText: "Komputer saya dijangkiti virus. Saya perlukan khidmat pembuangan virus" },
+                { text: "⬅️ Kembali ke Menu Utama", isBack: true }
+            ],
+            networking: [
+                { text: "🔌 Setup Rangkaian (Networking)", waText: "Saya berminat dengan servis Setup Rangkaian" },
+                { text: "📶 Konfigurasi Router & WiFi", waText: "Saya ingin konfigurasi Router & WiFi di rumah/pejabat" },
+                { text: "👨‍💻 IT Support Perniagaan / Individu", waText: "Saya perlukan khidmat IT Support untuk pengguna / perniagaan kecil" },
+                { text: "⬅️ Kembali ke Menu Utama", isBack: true }
+            ],
+            printer: [
+                { text: "🖨️ Servis Printer", waText: "Saya memerlukan khidmat Servis Printer" },
+                { text: "📄 Servis Percetakan", waText: "Saya ingin bertanya mengenai Servis Percetakan" },
+                { text: "⬅️ Kembali ke Menu Utama", isBack: true }
+            ],
+            jualan: [
+                { text: "✨ Laptop Baru", waText: "Saya ingin melihat senarai / membeli Laptop Baru" },
+                { text: "💼 Laptop Refurbished / Terpakai", waText: "Saya mencari Laptop Refurbished / Terpakai yang berkualiti" },
+                { text: "🖥️ Komputer Desktop (PC)", waText: "Saya berminat membeli Komputer Desktop (PC)" },
+                { text: "🔌 Aksesori Komputer", waText: "Saya sedang mencari Aksesori Komputer tertentu" },
+                { text: "⚙️ Komponen Upgrade (SSD, RAM, dll)", waText: "Saya ingin membeli Komponen Upgrade komputer" },
+                { text: "⬅️ Kembali ke Menu Utama", isBack: true }
+            ],
+            nasihat: [
+                { text: "🔍 Semakan Sebelum Pembelian Laptop", waText: "Saya perlukan panduan/semakan sebelum membuat keputusan membeli laptop" },
+                { text: "💰 Cadangan Spesifikasi Ikut Bajet", waText: "Boleh cadangkan spesifikasi laptop/PC mengikut bajet saya?" },
+                { text: "💡 Konsultasi Pembaikan atau Upgrade", waText: "Saya mahu dapatkan Konsultasi sama ada perlu baiki atau upgrade peranti saya" },
+                { text: "⬅️ Kembali ke Menu Utama", isBack: true }
+            ]
+        };
 
-        // App State
-        let apiKey = localStorage.getItem('syno_gemini_key') || "";
-        let shopPhone = localStorage.getItem('syno_shop_phone') || "601155551234"; 
-        let chatHistory = []; // Tracks structural dialogue for AI contextual analysis
-        let latestDiagnosis = ""; 
+        const chatMessages = document.getElementById("chat-messages");
+        const optionsContainer = document.getElementById("options-container");
+        const customMsgInput = document.getElementById("custom-msg-input");
 
-        // Theme Setup
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-            themeIcon.classList.replace('fa-moon', 'fa-sun');
-        } else {
-            document.documentElement.classList.remove('dark');
-            themeIcon.classList.replace('fa-sun', 'fa-moon');
-        }
+        // Initial setup
+        window.onload = function() {
+            showMenu("main");
+        };
 
-        themeToggle.addEventListener('click', () => {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-                themeIcon.classList.replace('fa-sun', 'fa-moon');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-                themeIcon.classList.replace('fa-moon', 'fa-sun');
-            }
-        });
-
-        // Initialize state
-        function updateUIState() {
-            if (apiKey) {
-                apiStatus.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1 animate-pulse"></span> Mod: AI Aktif (Gemini)';
-                apiStatus.className = "text-xs text-emerald-600 dark:text-emerald-400 font-medium";
-            } else {
-                apiStatus.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-amber-500 mr-1"></span> Mod: Simulasi Pintar';
-                apiStatus.className = "text-xs text-amber-600 dark:text-amber-500 font-medium";
-            }
-            inputApiKey.value = apiKey;
-            inputShopPhone.value = shopPhone;
-        }
-        updateUIState();
-
-        // Toast Helper
-        function showToast(message, isError = false) {
-            toastText.textContent = message;
-            if (isError) {
-                toastIcon.className = "fa-solid fa-circle-xmark text-red-500";
-            } else {
-                toastIcon.className = "fa-solid fa-circle-check text-emerald-500";
-            }
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
-        }
-
-        // Settings Modal Handlers
-        btnSettings.addEventListener('click', () => modalSettings.classList.remove('hidden'));
-        btnCloseModal.addEventListener('click', () => modalSettings.classList.add('hidden'));
-        
-        btnToggleKey.addEventListener('click', () => {
-            if (inputApiKey.type === 'password') {
-                inputApiKey.type = 'text';
-                eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                inputApiKey.type = 'password';
-                eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        });
-
-        btnSaveSettings.addEventListener('click', () => {
-            apiKey = inputApiKey.value.trim();
-            shopPhone = inputShopPhone.value.trim().replace(/\+/g, '').replace(/ /g, '');
-            
-            localStorage.setItem('syno_gemini_key', apiKey);
-            localStorage.setItem('syno_shop_phone', shopPhone);
-            
-            updateUIState();
-            modalSettings.classList.add('hidden');
-            showToast("Tetapan berjaya disimpan!");
-        });
-
-        // Chat logic
-        function appendMessage(sender, text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `flex items-start gap-3 ${sender === 'user' ? 'justify-end' : ''}`;
-            
-            let messageContent = '';
-            if (sender === 'user') {
-                messageContent = `
-                    <div class="bg-syno-500 text-white p-3.5 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] text-sm leading-relaxed">
-                        ${escapeHTML(text)}
-                    </div>
-                    <div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center flex-shrink-0 text-sm font-bold">
-                        U
-                    </div>
-                `;
-            } else {
-                const formattedText = formatBotResponse(text);
-                messageContent = `
-                    <div class="w-8 h-8 rounded-full bg-syno-500 text-white flex items-center justify-center flex-shrink-0 text-sm">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3.5 rounded-2xl rounded-tl-none shadow-sm max-w-[85%] text-sm leading-relaxed text-slate-800 dark:text-slate-100">
-                        <p class="font-semibold text-xs text-syno-500 mb-1">AI TECHNICIAN</p>
-                        ${formattedText}
-                    </div>
-                `;
-            }
-            
-            messageDiv.innerHTML = messageContent;
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        // Escape HTML to prevent XSS
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-            );
-        }
-
-        // Format Gemini Response into structured HTML layout
-        function formatBotResponse(text) {
-            let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            formatted = formatted.replace(/^\*\s(.*)/gm, '<li class="ml-4 list-disc">$1</li>');
-            formatted = formatted.replace(/<\/li>\n<li/g, '</li><li');
-            formatted = formatted.replace(/\n/g, '<br>');
-            return formatted;
-        }
-
-        // Static Diagnostic Engine (Fallback simulation when no API key is set)
-        function simulateDiagnostic(query) {
-            const q = query.toLowerCase();
-            let response = "";
-            
-            if (q.includes("lambat") || q.includes("lag") || q.includes("slow") || q.includes("ssd")) {
-                response = "**DIAGNOSIS:** Laptop anda kemungkinan besar mengalami masalah storan (HDD lama/lambat) atau memori (RAM) tidak mencukupi.\n\n" +
-                           "**CADANGAN PENYELESAIAN:**\n" +
-                           "* Naik taraf ke **SSD (Solid State Drive)**. Ini akan meningkatkan kelajuan laptop sehingga 10 kali ganda!\n" +
-                           "* Tambah **RAM** sekurang-kurangnya ke 8GB atau 16GB untuk multitasking lebih lancar.\n" +
-                           "* Buat format semula (Clean Install OS) untuk membersihkan fail sampah.\n\n" +
-                           "Kami di **Synotech** sedia membantu melakukan pemasangan SSD dan RAM ini dalam masa 1-2 jam sahaja!";
-            } else if (q.includes("skrin") || q.includes("pecah") || q.includes("screen") || q.includes("display") || q.includes("hitam")) {
-                response = "**DIAGNOSIS:** Masalah ini biasa berpunca daripada kerosakan fizikal panel LCD skrin atau masalah sambungan kabel reben di dalam laptop/telefon.\n\n" +
-                           "**CADANGAN PENYELESAIAN:**\n" +
-                           "* Peranti perlu dibuka untuk memeriksa sambungan reben LCD.\n" +
-                           "* Jika panel LCD retak/pecah, komponen LCD baru perlu dipasang.\n\n" +
-                           "Sila bawa peranti ke **Synotech** untuk pemeriksaan fizikal percuma. Kami boleh tukar skrin LCD laptop & telefon anda dengan cepat!";
-            } else if (q.includes("cas") || q.includes("bateri") || q.includes("charger") || q.includes("mati") || q.includes("power")) {
-                response = "**DIAGNOSIS:** Simptom tidak boleh dicas atau mati terus biasanya disebabkan oleh bateri rosak, port pengecasan longgar, atau masalah papan induk (motherboard ic power).\n\n" +
-                           "**CADANGAN PENYELESAIAN:**\n" +
-                           "* Cuba gunakan pengecas alternatif yang disahkan berfungsi.\n" +
-                           "* Jika masih tidak boleh, port USB/Charging Port atau bateri perlu ditukar.\n\n" +
-                           "Bawa telefon/laptop anda ke **Synotech** untuk kami uji kesihatan bateri dan kerosakan litar elektrik menggunakan alat khas!";
-            } else if (q.includes("windows") || q.includes("boot") || q.includes("repair") || q.includes("sangkut")) {
-                response = "**DIAGNOSIS:** Masalah bootloop Windows Automatic Repair biasanya disebabkan oleh fail sistem korup (system files corruption) atau kerosakan storan (SSD/HDD failure).\n\n" +
-                           "**CADANGAN PENYELESAIAN:**\n" +
-                           "* Boleh cuba kaedah 'System Restore' atau 'Startup Repair'.\n" +
-                           "* Sekiranya gagal, pemasangan semula Windows (Re-install OS) yang bersih diperlukan.\n\n" +
-                           "Hubungi pakar software di **Synotech** jika anda mahu kami menyelamatkan data-data penting anda terlebih dahulu sebelum Windows diformat semula!";
-            } else {
-                response = "Terima kasih atas perkongsian anda. \n\n**DIAGNOSIS JAWATAN AWAL:** Tanda-tanda ini memerlukan pemeriksaan lebih lanjut oleh juruteknik.\n\n" +
-                           "**Tindakan seterusnya:** Kami mencadangkan anda membawa peranti ke cawangan **Synotech** atau tekan butang **WhatsApp** di bawah untuk berbincang secara terus dengan juruteknik fizikal kami berkenaan kos baiki!";
-            }
-            
-            return response;
-        }
-
-        // Generic fallback values for cost estimates
-        function getSimulatedCostEstimate(query) {
-            const q = query.toLowerCase();
-            if (q.includes("lambat") || q.includes("slow") || q.includes("ssd") || q.includes("lag")) {
-                return "**ANGGARAN KOS & TEMPOH (Simulasi):**\n\n* **SSD Upgrade (256GB - 512GB):** RM150 - RM280\n* **RAM Upgrade (8GB - 16GB DDR4):** RM110 - RM220\n* **Tempoh Siap:** 1 - 2 Jam (Sama hari)\n\n*Nota: Harga sebenar bergantung kepada model spec penuh laptop anda.*";
-            } else if (q.includes("skrin") || q.includes("pecah") || q.includes("screen") || q.includes("display")) {
-                return "**ANGGARAN KOS & TEMPOH (Simulasi):**\n\n* **Tukar Skrin LCD Laptop:** RM250 - RM480 (Mengikut model/resolusi)\n* **Tukar Skrin LCD Telefon:** RM120 - RM350\n* **Tempoh Siap:** 1 - 3 jam (jika stok sedia ada)\n\n*Sila rujuk terus dengan kami untuk pastikan model LCD yang tepat.*";
-            } else if (q.includes("bateri") || q.includes("cas") || q.includes("charging")) {
-                return "**ANGGARAN KOS & TEMPOH (Simulasi):**\n\n* **Tukar Bateri Telefon Pintar:** RM80 - RM150\n* **Tukar Bateri Laptop:** RM140 - RM260\n* **Tukar Port Charging:** RM70 - RM120\n* **Tempoh Siap:** 30 minit - 2 jam";
-            }
-            return "**ANGGARAN KOS & TEMPOH (Simulasi):**\n\n* **Servis Diagnostik Fizikal:** Percuma di Kedai Synotech!\n* **Pemasangan Software / Format Semula:** RM50 - RM80\n* **Urusan Motherboard Repair:** Mulai RM150+\n* **Tempoh Siap:** Mengikut kerumitan (1 - 3 hari)";
-        }
-
-        // Generic fallback for DIY steps
-        function getSimulatedDiyGuide(query) {
-            return "**PANDUAN DIY PANTAS & SELAMAT:**\n\n" +
-                   "1. **Hard Reset Peranti:** Matikan peranti sepenuhnya. Cabut semua wayar kuasa/charger & USB. Tekan butang power selama 30 saat. Pasang semula dan hidupkan.\n" +
-                   "2. **Lakukan Semakan Suhu:** Jika peranti terlalu panas, letakkannya di permukaan rata yang keras dan biarkan sejuk selama 15 minit sebelum dihidupkan semula.\n" +
-                   "3. **Masuk ke Safe Mode (Laptop):** Jika sistem tersangkut, cuba hidupkan laptop sambil tekan butang F8 (atau Shift + Restart) secara berturut-turut untuk cuba boot ke Safe Mode.\n\n" +
-                   "*Amaran keselamatan: Elakkan daripada membuka casing bateri atau perkakasan dalaman sendiri jika tiada pengalaman untuk mengelakkan litar pintas.*";
-        }
-
-        // Universal Gemini API caller wrapper with Exponential Backoff
-        async function queryGemini(promptText, systemInstruction) {
-            const payload = {
-                contents: [{ parts: [{ text: promptText }] }],
-                systemInstruction: { parts: [{ text: systemInstruction }] }
-            };
-
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const maxRetries = 5;
-            let delay = 1000;
-
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
-                    const data = await response.json();
-                    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (aiText) return aiText;
-                    throw new Error("Invalid API response content");
-                } catch (error) {
-                    if (i === maxRetries - 1) throw error;
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2;
-                }
-            }
-        }
-
-        // Primary Chat Diagnostic AI Call
-        async function fetchGeminiAI(userMessage) {
-            // Build message history context for Gemini to remember past diagnostics in the session
-            let contextPayload = "Berikut adalah log perbualan diagnosis antara pelanggan dan AI:\n";
-            chatHistory.forEach(msg => {
-                contextPayload += `${msg.role === 'user' ? 'Pelanggan' : 'AI Juruteknik'}: ${msg.text}\n`;
-            });
-            contextPayload += `Pelanggan berkata terbaharu: "${userMessage}"`;
-
-            const systemPrompt = `Anda adalah juruteknik AI Diagnostics Helper yang ramah dan sangat pakar untuk kedai 'Synotech' di Terengganu, Malaysia.
-Tugas anda:
-1. Bantu pelanggan mengenalpasti punca masalah peranti mereka (laptop, desktop PC, telefon pintar, tablet, console game).
-2. Terangkan punca kerosakan teknikal secara ringkas dan mudah difahami dalam Bahasa Melayu.
-3. Cadangkan penyelesaian terbaik dan beritahu mereka bahawa pasukan Synotech sedia membantu membaiki peranti tersebut.
-4. Sentiasa pastikan maklum balas anda profesional, mesra, dan meyakinkan pelanggan untuk menghantar peranti mereka ke kedai Synotech.`;
-
-            return await queryGemini(contextPayload, systemPrompt);
-        }
-
-        // LLM FEATURE 1: Estimate Cost & Time dynamically based on the current diagnostic conversation
-        async function fetchCostEstimateAI() {
-            let context = "Berikut adalah ringkasan kerosakan pelanggan:\n";
-            chatHistory.forEach(msg => {
-                context += `${msg.role === 'user' ? 'Masalah Pelanggan' : 'Analisis AI'}: ${msg.text}\n`;
-            });
-
-            const prompt = `${context}\n\nSila berikan ramalan anggaran kos pasaran di Malaysia (dalam RM) dan jangkaan tempoh masa pembaikan untuk membaiki masalah di atas di kedai Synotech. Strukturkan jawapan anda dalam format senarai ringkas dan sertakan pesanan mesra.`;
-            const systemPrompt = "Anda adalah penganggar kos perkakasan komputer & telefon pintar pintar dari Synotech Malaysia. Anda memberikan anggaran kos baiki dalam RM secara telus, kompetitif, dan realistik mengikut pasaran semasa Malaysia.";
-
-            return await queryGemini(prompt, systemPrompt);
-        }
-
-        // LLM FEATURE 2: Dynamic Safe DIY Troubleshooting Guide based on diagnostic status
-        async function fetchDiyGuideAI() {
-            let context = "Peranti pelanggan menghadapi situasi ini:\n";
-            chatHistory.forEach(msg => {
-                if (msg.role === 'user') context += `- ${msg.text}\n`;
-            });
-
-            const prompt = `${context}\n\nSila berikan 3 langkah penyelesaian DIY yang selamat dan mudah untuk dicuba sendiri di rumah sebelum dihantar ke kedai. Sertakan amaran keselamatan penting di bawah panduan tersebut agar pelanggan tidak merosakkan peranti mereka secara tidak sengaja.`;
-            const systemPrompt = "Anda adalah juruteknik penasihat keselamatan peranti. Anda menyediakan tip-tip 'Do-It-Yourself' (DIY) yang selamat, praktikal, dan tidak membahayakan pengguna atau merosakkan jaminan (warranty) perkakasan.";
-
-            return await queryGemini(prompt, systemPrompt);
-        }
-
-        // LLM FEATURE 3: Smart WhatsApp Draft Message Generator
-        async function fetchWhatsappDraftAI() {
-            let context = "Butiran Ringkas Masalah:\n";
-            chatHistory.forEach(msg => {
-                if (msg.role === 'user') context += `- ${msg.text}\n`;
-            });
-
-            const prompt = `${context}\n\nSila bina satu draf mesej ringkas, teratur, dan profesional dalam Bahasa Melayu untuk dihantar dari pelanggan ke WhatsApp kedai Synotech. Draf mestilah mesra, mengandungi pengenalan diri pelanggan, senarai masalah peranti yang dialami, serta permohonan untuk membuat temu janji slot pemeriksaan di kedai.`;
-            const systemPrompt = "Anda adalah pembantu komunikasi yang membantu pelanggan membina draf tempahan khidmat pembaikan yang profesional dan sedia hantar untuk dihantar ke WhatsApp.";
-
-            return await queryGemini(prompt, systemPrompt);
-        }
-
-        // Handle Chat Form Submit
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const message = userInput.value.trim();
-            if (!message) return;
-
-            // Add user message to UI
-            appendMessage('user', message);
-            chatHistory.push({ role: 'user', text: message });
-            userInput.value = '';
-            
-            // Show Typing Indicator
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'flex items-start gap-3 temp-typing';
-            typingDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-syno-500 text-white flex items-center justify-center flex-shrink-0 text-sm">
-                    <i class="fa-solid fa-robot"></i>
-                </div>
-                <div class="bg-slate-100 dark:bg-slate-800 p-3.5 rounded-2xl rounded-tl-none text-xs text-slate-500 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-notch animate-spin text-syno-500"></i> AI sedang menganalisis kerosakan...
-                </div>
-            `;
-            chatContainer.appendChild(typingDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-
-            let botResponse = "";
-
-            try {
-                if (apiKey) {
-                    botResponse = await fetchGeminiAI(message);
-                } else {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    botResponse = simulateDiagnostic(message);
-                }
-            } catch (err) {
-                console.error(err);
-                botResponse = "Maaf, ralat sambungan dikesan ketika memproses diagnosis anda menggunakan Gemini API. Sila semak semula sambungan internet atau tetapan API Key anda.";
-                showToast("Ralat Komunikasi API!", true);
-            } finally {
-                const typingIndicator = chatContainer.querySelector('.temp-typing');
-                if (typingIndicator) typingIndicator.remove();
-            }
-
-            // Append AI response
-            appendMessage('ai', botResponse);
-            chatHistory.push({ role: 'ai', text: botResponse });
-            latestDiagnosis = botResponse;
-            
-            // Display Action Deck (CTA Area)
-            ctaArea.classList.remove('hidden');
-        });
-
-        // Click on Quick Diagnostic Buttons
-        quickBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const problemText = btn.getAttribute('data-problem');
-                userInput.value = problemText;
-                chatForm.dispatchEvent(new Event('submit'));
-            });
-        });
-
-        // Trigger Cost & Duration Estimator Integration
-        btnEstimateCost.addEventListener('click', async () => {
-            if (chatHistory.length === 0) return;
-
-            showToast("Menjana anggaran kos...");
-            
-            // Temporary disabled button state to prevent multi clicks
-            btnEstimateCost.disabled = true;
-            btnEstimateCost.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Meramal...`;
-
-            let estimateResult = "";
-            try {
-                if (apiKey) {
-                    estimateResult = await fetchCostEstimateAI();
-                } else {
-                    const lastUserMsg = chatHistory.filter(m => m.role === 'user').pop()?.text || "";
-                    estimateResult = getSimulatedCostEstimate(lastUserMsg);
-                }
-                appendMessage('ai', estimateResult);
-            } catch (error) {
-                console.error(error);
-                showToast("Gagal menjana anggaran kos.", true);
-            } finally {
-                btnEstimateCost.disabled = false;
-                btnEstimateCost.innerHTML = `<i class="fa-solid fa-tag"></i> ✨ Anggaran Kos & Tempoh`;
-            }
-        });
-
-        // Trigger DIY Safe Guide Integration
-        btnDiyGuide.addEventListener('click', async () => {
-            if (chatHistory.length === 0) return;
-
-            showToast("Menjana panduan DIY...");
-            btnDiyGuide.disabled = true;
-            btnDiyGuide.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Merangka DIY...`;
-
-            let diyResult = "";
-            try {
-                if (apiKey) {
-                    diyResult = await fetchDiyGuideAI();
-                } else {
-                    const lastUserMsg = chatHistory.filter(m => m.role === 'user').pop()?.text || "";
-                    diyResult = getSimulatedDiyGuide(lastUserMsg);
-                }
-                appendMessage('ai', diyResult);
-            } catch (error) {
-                console.error(error);
-                showToast("Gagal menjana panduan DIY.", true);
-            } finally {
-                btnDiyGuide.disabled = false;
-                btnDiyGuide.innerHTML = `<i class="fa-solid fa-wrench"></i> ✨ Panduan DIY Selamat`;
-            }
-        });
-
-        // Trigger Smart WhatsApp Draft Booking Integration
-        btnDraftWa.addEventListener('click', async () => {
-            if (chatHistory.length === 0) return;
-
-            showToast("Merangka draf WhatsApp...");
-            btnDraftWa.disabled = true;
-            btnDraftWa.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Merangka Draf...`;
-
-            let waDraft = "";
-            try {
-                if (apiKey) {
-                    waDraft = await fetchWhatsappDraftAI();
-                } else {
-                    const lastUserMsg = chatHistory.filter(m => m.role === 'user').pop()?.text || "Kerosakan Peranti";
-                    waDraft = `Salam Synotech, saya berminat untuk membuat temu janji baiki peranti.\n\nButiran kerosakan: ${lastUserMsg}\n\nMohon maklumat lanjut mengenai anggaran harga baiki dan slot waktu kosong di kedai. Terima kasih!`;
-                }
-
-                // Show draft as a bot confirmation message
-                appendMessage('ai', `**DRAF WHATSAPP ANDA TELAH SEDIA:**\n\n_\"${waDraft}\"_\n\n*Mesej di atas sedang dihantar ke WhatsApp Synotech...*`);
-
-                // Send to WhatsApp API
-                const cleanDraft = waDraft.replace(/\*\*|#|_/g, "");
-                const encodedText = encodeURIComponent(cleanDraft);
-                const whatsappUrl = `https://wa.me/${shopPhone}?text=${encodedText}`;
+        // Render options list inside the bottom interaction area
+        function showOptions(options) {
+            optionsContainer.innerHTML = "";
+            options.forEach(opt => {
+                const button = document.createElement("button");
+                button.className = "w-full text-left px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-[#f0f0f0] active:bg-gray-200 text-xs text-gray-700 font-medium transition-all shadow-sm flex items-center justify-between";
                 
-                setTimeout(() => {
-                    window.open(whatsappUrl, '_blank');
-                }, 1500);
+                if (opt.next) {
+                    button.innerHTML = `<span>${opt.text}</span> <i class="fa-solid fa-chevron-right text-gray-400 text-[10px]"></i>`;
+                    button.onclick = () => selectCategory(opt.text, opt.next);
+                } else if (opt.isBack) {
+                    button.className = "w-full text-left px-4 py-2.5 rounded-xl border border-dashed border-[#294582] bg-synotech-secondary hover:bg-gray-200 text-xs text-[#294582] font-semibold transition-all flex items-center justify-center gap-2";
+                    button.innerHTML = `<i class="fa-solid fa-arrow-left text-[10px]"></i> Kembali ke Menu Utama`;
+                    button.onclick = () => goBackToMain();
+                } else {
+                    button.innerHTML = `<span>${opt.text}</span> <i class="fa-brands fa-whatsapp text-green-600 text-sm"></i>`;
+                    button.onclick = () => triggerWhatsApp(opt.text, opt.waText);
+                }
+                optionsContainer.appendChild(button);
+            });
+            // Auto-scroll options container to top when loaded
+            optionsContainer.scrollTop = 0;
+        }
 
-            } catch (error) {
-                console.error(error);
-                showToast("Gagal membina draf WhatsApp.", true);
-            } finally {
-                btnDraftWa.disabled = false;
-                btnDraftWa.innerHTML = `<i class="fa-brands fa-whatsapp text-sm"></i> ✨ Draf Mesej WhatsApp Pintar`;
+        // Action when category clicked
+        function selectCategory(categoryName, nextKey) {
+            // User bubble
+            addMessage(categoryName, true);
+            
+            // Bot typing/reply effect
+            setTimeout(() => {
+                let replyText = `Anda telah memilih **${categoryName}**. Sila pilih servis khusus di bawah untuk berhubung terus ke WhatsApp kami:`;
+                addMessage(replyText, false);
+                showMenu(nextKey);
+            }, 300);
+        }
+
+        function goBackToMain() {
+            addMessage("Kembali ke Menu Utama", true);
+            setTimeout(() => {
+                addMessage("Sila pilih perkhidmatan lain yang anda perlukan:", false);
+                showMenu("main");
+            }, 300);
+        }
+
+        function showMenu(key) {
+            if (servicesData[key]) {
+                showOptions(servicesData[key]);
             }
-        });
+        }
 
-        // Reset chat
-        btnClear.addEventListener('click', () => {
-            chatContainer.innerHTML = `
-                <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 rounded-full bg-syno-500 text-white flex items-center justify-center flex-shrink-0 text-sm">
-                        <i class="fa-solid fa-robot"></i>
+        // Add visual chat bubbles
+        function addMessage(text, isUser = false) {
+            const wrapper = document.createElement("div");
+            wrapper.className = `flex items-start space-x-2 ${isUser ? 'justify-end' : ''} animate-fade-in`;
+
+            let avatar = '';
+            if (!isUser) {
+                avatar = `<div class="w-8 h-8 rounded-full bg-[#294582] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">S</div>`;
+            }
+
+            const bubbleClass = isUser 
+                ? "bg-[#294582] text-white rounded-2xl rounded-tr-none" 
+                : "glass-card text-gray-800 rounded-2xl rounded-tl-none";
+
+            wrapper.innerHTML = `
+                ${!isUser ? avatar : ''}
+                <div class="${bubbleClass} p-3 max-w-[85%] text-sm shadow-sm">
+                    ${text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                </div>
+                ${isUser ? `<div class="w-8 h-8 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center text-xs font-bold shrink-0 mt-1"><i class="fa-solid fa-user"></i></div>` : ''}
+            `;
+
+            chatMessages.appendChild(wrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Redirect with formatted message to WhatsApp
+        function triggerWhatsApp(serviceTitle, messageBody) {
+            addMessage(`Saya berminat dengan: ${serviceTitle}`, true);
+            
+            setTimeout(() => {
+                addMessage(`Sediakan mesej anda... Kami akan membawa anda terus ke WhatsApp Synotech. 🚀`, false);
+                
+                const formatMsg = `Salam Synotech, saya melayari laman web anda dan ingin bertanya mengenai:\n\n*${serviceTitle}*\n\n(${messageBody})`;
+                const encodedMsg = encodeURIComponent(formatMsg);
+                const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`;
+                
+                // Open in new tab or direct window redirect
+                window.open(waUrl, '_blank');
+            }, 600);
+        }
+
+        // Send custom written message in text input box
+        function sendCustomMessage() {
+            const text = customMsgInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, true);
+            customMsgInput.value = "";
+
+            setTimeout(() => {
+                addMessage(`Terima kasih atas mesej anda. Kami akan teruskan butiran kerosakan/pertanyaan anda ke WhatsApp untuk respon pantas.`, false);
+                
+                const formatMsg = `Salam Synotech,\n\nSaya ingin bertanya mengenai:\n"${text}"`;
+                const encodedMsg = encodeURIComponent(formatMsg);
+                const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`;
+                
+                window.open(waUrl, '_blank');
+            }, 600);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendCustomMessage();
+            }
+        }
+
+        // Reset Chat state
+        function resetChat() {
+            chatMessages.innerHTML = `
+                <div class="flex items-start space-x-2 animate-fade-in">
+                    <div class="w-8 h-8 rounded-full bg-synotech-main text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">
+                        S
                     </div>
-                    <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3.5 rounded-2xl rounded-tl-none shadow-sm max-w-[85%] text-sm leading-relaxed text-slate-800 dark:text-slate-100">
-                        <p class="font-semibold text-xs text-syno-500 mb-1">AI TECHNICIAN</p>
-                        Hai! Sesi chat telah diset semula. Ada masalah peranti lain yang mahu saya periksa? Sila nyatakan di bawah.
+                    <div class="glass-card text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm">
+                        <p class="font-semibold text-synotech-main mb-1">Hai! Selamat datang ke Synotech! 👋</p>
+                        <p class="mb-2">Kami sedia membantu membaiki, menaik taraf, dan menjaga peranti IT anda.</p>
+                        <p class="text-xs font-medium text-gray-500 italic">"Professional Service, The Best Solutions."</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-2 animate-fade-in">
+                    <div class="w-8 h-8 rounded-full bg-synotech-main text-white flex items-center justify-center text-xs font-bold shrink-0 mt-1">
+                        S
+                    </div>
+                    <div class="glass-card text-gray-800 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-sm">
+                        Sila pilih kategori perkhidmatan yang anda perlukan di bahagian menu bawah 👇
                     </div>
                 </div>
             `;
-            ctaArea.classList.add('hidden');
-            chatHistory = [];
-            latestDiagnosis = "";
-        });
+            showMenu("main");
+        }
     </script>
 </body>
 </html>
