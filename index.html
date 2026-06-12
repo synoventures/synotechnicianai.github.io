@@ -33,6 +33,39 @@
             border-radius: 12px;
             margin-top: 8px;
         }
+
+        /* Menu pilihan tersembunyi */
+        #options-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, margin-bottom 0.3s ease;
+            margin-bottom: 0;
+        }
+        #options-container.expanded {
+            max-height: 300px;
+            margin-bottom: 12px;
+        }
+
+        /* Butang pembuka menu (denyutan biru) */
+        #options-toggle-btn {
+            animation: pulse-glow 2s infinite;
+            transition: all 0.2s ease;
+        }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(41, 69, 130, 0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(41, 69, 130, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(41, 69, 130, 0); }
+        }
+
+        /* Butang WhatsApp berdenyut hijau */
+        .wa-pulse {
+            animation: wa-pulse-glow 1.5s infinite;
+        }
+        @keyframes wa-pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.6); }
+            70% { box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
     </style>
 </head>
 <body class="h-screen w-full flex items-center justify-center p-0 m-0 overflow-hidden">
@@ -51,14 +84,22 @@
 
         <!-- Panel bawah (pilihan + input) -->
         <div class="bg-white/70 backdrop-blur-md border-t border-[#294582]/10 p-3 relative z-10">
-            <div id="options-container" class="mb-3 max-h-48 overflow-y-auto">
-                <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5 px-1 flex items-center gap-1">
-                    <span id="options-label">💡 Pilihan Pintar</span>
+            <!-- Butang Togol Menu Pilihan (berdenyut) -->
+            <button id="options-toggle-btn" class="w-full mb-2 flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[#294582]/10 border border-[#294582]/30 text-[#294582] text-xs font-bold hover:bg-[#294582]/20 transition-colors" onclick="toggleOptions()">
+                <span id="options-toggle-icon">⚡</span>
+                <span id="options-toggle-text">Pilihan Pintar</span>
+            </button>
+
+            <!-- Menu Pilihan (tersembunyi) -->
+            <div id="options-container">
+                <div class="flex justify-between items-center mb-1.5 px-1">
+                    <span id="options-label" class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">💡 Pilihan Pintar</span>
                     <span id="current-menu" class="text-[#294582] text-[9px] bg-[#294582]/10 px-1.5 py-0.5 rounded">Utama</span>
-                </p>
+                </div>
                 <div id="options-buttons" class="flex flex-wrap gap-1.5"></div>
             </div>
 
+            <!-- Borang Input -->
             <form id="chat-form" onsubmit="handleFormSubmit(event)" class="flex items-center gap-2">
                 <div class="relative flex-1">
                     <input type="text" id="user-input" placeholder="Taip kerosakan anda disini..." 
@@ -76,15 +117,19 @@
     <script>
         const WHATSAPP_NUMBER = "601174407112";
         const chatHistory = document.getElementById('chat-history');
+        const optionsContainer = document.getElementById('options-container');
         const optionsButtons = document.getElementById('options-buttons');
         const currentMenuLabel = document.getElementById('current-menu');
         const optionsLabel = document.getElementById('options-label');
         const userInput = document.getElementById('user-input');
         const langIcon = document.getElementById('langIcon');
         const langText = document.getElementById('langText');
+        const optionsToggleIcon = document.getElementById('options-toggle-icon');
+        const optionsToggleText = document.getElementById('options-toggle-text');
 
         let currentLevel = "main";
         let currentLang = "ms";
+        let optionsExpanded = false;
 
         // ------ DATA PERKHIDMATAN (dwibahasa) ------
         function getServiceData(lang) {
@@ -204,7 +249,7 @@
             ];
         }
 
-        // ------ MESEJ ALU-ALUAN (dengan iframe peta) ------
+        // ------ MESEJ ALU-ALUAN DENGAN PETA & NAMA BARU ------
         const mapIframeHTML = `<div class="w-full h-48 mt-2">
             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7567.739544985522!2d103.158861!3d5.313232600000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31b7bfe6ec163b95%3A0xd139f102e1b80bda!2sSynotech%20-%20Kedai%20Jual%20dan%20Baiki%20Laptop%20Komputer%20Kuala%20Terengganu!5e1!3m2!1sen!2smy!4v1781289487537!5m2!1sen!2smy" 
                 class="map-iframe" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -213,79 +258,80 @@
         function getIntroMessages(lang) {
             const isMs = (lang === 'ms');
             const mapBlock = mapIframeHTML;
+            // Semua rujukan kedai telah ditukar kepada "Synotech Computer Kuala Terengganu"
             if (isMs) {
                 return [
-                    `Selamat datang ke <strong>Synotech Computer Sales and Services</strong>! 🛠️ <br><br>
+                    `Selamat datang ke <strong>Synotech Computer Kuala Terengganu</strong>! 🛠️ <br><br>
                     Kami sedia membantu membaiki laptop, komputer desktop, upgrade, servis printer dan membekalkan aksesori berkualiti.
                     <br><br>
                     📍 Lokasi kami di Pantai Batu Buruk, Kuala Terengganu.<br>
                     ${mapBlock}
-                    <br>Sila pilih kategori masalah anda di bawah atau taip masalah anda terus dalam ruangan sembang.`,
+                    <br>Gunakan butang <strong>⚡ Pilihan Pintar</strong> di bawah untuk memilih kategori.`,
 
-                    `Hai! 👋 Terima kasih singgah ke <strong>Synotech Computer Sales and Services</strong>.<br><br>
-                    Kami pakar dalam baik pulih komputer, laptop, servis pencetak, dan naik taraf sistem. Jangan ragu untuk bertanya!
+                    `Hai! 👋 Terima kasih singgah ke <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
+                    Kami pakar dalam baik pulih komputer, laptop, servis pencetak, dan naik taraf sistem.
                     <br><br>
-                    🗺️ Kami terletak di Pantai Batu Buruk, Kuala Terengganu —
+                    🗺️ Pantai Batu Buruk, Kuala Terengganu —
                     ${mapBlock}
-                    <br>Gunakan menu di bawah atau taip masalah anda secara terus.`,
+                    <br>Ketik <strong>⚡ Pilihan Pintar</strong> untuk mulakan.`,
 
-                    `Apa khabar! Selamat datang ke kedai kami – <strong>Synotech Computer Sales and Services</strong>.<br><br>
-                    Dari baiki laptop rosak, masalah overheating, hingga pasang WiFi pejabat, kami sedia bantu.
+                    `Apa khabar! Selamat datang ke kedai kami – <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
+                    Dari baiki laptop rosak hingga pasang WiFi pejabat, kami sedia bantu.
                     <br><br>
-                    📍 Cari kami di Pantai Batu Buruk, Kuala Terengganu.
+                    📍 Pantai Batu Buruk, Kuala Terengganu.
                     ${mapBlock}
-                    <br>Pilih perkhidmatan yang anda perlukan di bawah.`,
+                    <br>Ketahui perkhidmatan kami melalui butang <strong>⚡ Pilihan Pintar</strong>.`,
 
                     `Hai, terima kasih hubungi Synotech! 👨‍💻<br><br>
-                    Anda kini berhubung dengan <strong>Synotech Computer Sales and Services</strong>, pakar komputer di Kuala Terengganu.
+                    Anda kini berhubung dengan <strong>Synotech Computer Kuala Terengganu</strong>, pakar komputer di Kuala Terengganu.
                     <br><br>
-                    📍 Lokasi kami di Pantai Batu Buruk —
+                    📍 Pantai Batu Buruk —
                     ${mapBlock}
-                    <br>Ceritakan masalah komputer anda atau pilih kategori di bawah.`,
+                    <br>Pilih kategori masalah anda melalui <strong>⚡ Pilihan Pintar</strong>.`,
 
                     `Salam sejahtera! 🤝<br><br>
-                    <strong>Synotech Computer Sales and Services</strong> mengalu-alukan anda. Kami menyediakan servis repair, upgrade, cuci habuk, jualan laptop, dan banyak lagi.
+                    <strong>Synotech Computer Kuala Terengganu</strong> mengalu-alukan anda.
                     <br><br>
-                    🗺️ Datang terus ke kedai kami di Pantai Batu Buruk, Kuala Terengganu
+                    🗺️ Pantai Batu Buruk, Kuala Terengganu
                     ${mapBlock}
-                    <br>Untuk mula, sila pilih kategori di bawah atau taip kerosakan anda.`
+                    <br>Untuk bermula, ketik butang <strong>⚡ Pilihan Pintar</strong> di bawah.`
                 ];
             } else {
                 return [
-                    `Welcome to <strong>Synotech Computer Sales and Services</strong>! 🛠️ <br><br>
+                    `Welcome to <strong>Synotech Computer Kuala Terengganu</strong>! 🛠️ <br><br>
                     We are ready to help with laptop repairs, desktop computers, upgrades, printer services, and quality accessories.
                     <br><br>
                     📍 Our location: Pantai Batu Buruk, Kuala Terengganu.<br>
                     ${mapBlock}
-                    <br>Please select your problem category below or type your issue directly in the chat.`,
+                    <br>Tap the <strong>⚡ Smart Options</strong> button below to choose a category.`,
 
-                    `Hi! 👋 Thanks for visiting <strong>Synotech Computer Sales and Services</strong>.<br><br>
-                    We specialize in computer & laptop repair, printer servicing, and system upgrades. Don't hesitate to ask!
+                    `Hi! 👋 Thanks for visiting <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
+                    We specialize in computer & laptop repair, printer servicing, and system upgrades.
                     <br><br>
-                    🗺️ We are located at Pantai Batu Buruk, Kuala Terengganu —
+                    🗺️ Pantai Batu Buruk, Kuala Terengganu —
                     ${mapBlock}
-                    <br>Use the menu below or type your problem directly.`,
+                    <br>Tap <strong>⚡ Smart Options</strong> to get started.`,
 
-                    `How are you! Welcome to our store – <strong>Synotech Computer Sales and Services</strong>.<br><br>
-                    From fixing a broken laptop, overheating issues, to setting up office WiFi, we are here to help.
+                    `Welcome to our store – <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
+                    From fixing a broken laptop to setting up office WiFi, we are here to help.
                     <br><br>
-                    📍 Find us at Pantai Batu Buruk, Kuala Terengganu.
+                    📍 Pantai Batu Buruk, Kuala Terengganu.
                     ${mapBlock}
-                    <br>Choose the service you need below.`,
+                    <br>Explore our services with the <strong>⚡ Smart Options</strong> button.`,
 
                     `Hi, thanks for reaching out to Synotech! 👨‍💻<br><br>
-                    You're now connected with <strong>Synotech Computer Sales and Services</strong>, computer experts in Kuala Terengganu.
+                    You're now connected with <strong>Synotech Computer Kuala Terengganu</strong>, computer experts in Kuala Terengganu.
                     <br><br>
-                    📍 Our location: Pantai Batu Buruk —
+                    📍 Pantai Batu Buruk —
                     ${mapBlock}
-                    <br>Tell us about your computer problem or select a category below.`,
+                    <br>Select your issue category via <strong>⚡ Smart Options</strong>.`,
 
                     `Greetings! 🤝<br><br>
-                    <strong>Synotech Computer Sales and Services</strong> welcomes you. We provide repair, upgrade, dust cleaning, laptop sales, and much more.
+                    <strong>Synotech Computer Kuala Terengganu</strong> welcomes you.
                     <br><br>
-                    🗺️ Visit our store at Pantai Batu Buruk, Kuala Terengganu
+                    🗺️ Pantai Batu Buruk, Kuala Terengganu
                     ${mapBlock}
-                    <br>To start, please choose a category below or type your issue.`
+                    <br>To begin, tap the <strong>⚡ Smart Options</strong> button below.`
                 ];
             }
         }
@@ -301,11 +347,14 @@
                 resetBtn: isMs ? "🔄 Tanya Mengenai Servis Lain" : "🔄 Ask About Another Service",
                 userLabel: isMs ? "Anda" : "You",
                 inputPlaceholder: isMs ? "Taip kerosakan anda disini..." : "Type your issue here...",
+                toggleBtnOpen: isMs ? "⚡ Pilihan Pintar" : "⚡ Smart Options",
+                toggleBtnClose: isMs ? "✖ Tutup Menu" : "✖ Close Menu",
                 serviceChosen: (name) => isMs ? `Saya berminat dengan: *${name}*` : `I'm interested in: *${name}*`,
                 rightChoice: (name) => isMs
                     ? `Satu pilihan yang tepat! Kami sedia membantu anda untuk urusan <strong>${name}</strong> di Synotech Batu Buruk.<br><br>Untuk respon terpantas, hantarkan mesej tempahan/pertanyaan ini terus ke talian WhatsApp rasmi kami.<br><br>`
                     : `Great choice! We are ready to assist you with <strong>${name}</strong> at Synotech Batu Buruk.<br><br>For the fastest response, send this booking/inquiry directly to our official WhatsApp line.<br><br>`,
-                waBtn: isMs ? "Hubungi WhatsApp Synotech" : "Contact Synotech WhatsApp",
+                // Butang WhatsApp teks baru dan kesan denyut
+                waBtn: isMs ? "Hantar Masalah ke WhatsApp Synotech" : "Forward Problem to WhatsApp Synotech",
                 understandingMsg: (text, advice) => isMs
                     ? `Saya faham masalah anda.<br><br>💡 <strong>Cadangan Synotech:</strong><br>${advice}<br><br>Sila klik butang di bawah untuk menghantar mesej rujukan masalah anda ("<em>${text}</em>") terus ke juruteknik kami di WhatsApp untuk semakan lanjut.`
                     : `I understand your problem.<br><br>💡 <strong>Synotech Suggestion:</strong><br>${advice}<br><br>Click the button below to send your issue reference ("<em>${text}</em>") directly to our technician on WhatsApp for further review.`,
@@ -329,11 +378,41 @@
             return `${baseUrl}?text=${encodeURIComponent(prefix + customText + "*")}`;
         }
 
+        // Togol menu pilihan
+        function toggleOptions() {
+            optionsExpanded = !optionsExpanded;
+            if (optionsExpanded) {
+                optionsContainer.classList.add('expanded');
+                optionsToggleIcon.textContent = '✖';
+                optionsToggleText.textContent = UI().toggleBtnClose.replace('✖ ', '');
+            } else {
+                optionsContainer.classList.remove('expanded');
+                optionsToggleIcon.textContent = '⚡';
+                optionsToggleText.textContent = UI().toggleBtnOpen.replace('⚡ ', '');
+            }
+            if (optionsExpanded) {
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+        }
+
+        function updateToggleButtonText() {
+            if (optionsExpanded) {
+                optionsToggleIcon.textContent = '✖';
+                optionsToggleText.textContent = UI().toggleBtnClose.replace('✖ ', '');
+            } else {
+                optionsToggleIcon.textContent = '⚡';
+                optionsToggleText.textContent = UI().toggleBtnOpen.replace('⚡ ', '');
+            }
+        }
+
         function toggleLanguage() {
             currentLang = (currentLang === 'ms') ? 'en' : 'ms';
             langIcon.textContent = currentLang === 'ms' ? '🇲🇾' : '🇬🇧';
             langText.textContent = currentLang === 'ms' ? 'BM' : 'EN';
             chatHistory.innerHTML = '';
+            optionsContainer.classList.remove('expanded');
+            optionsExpanded = false;
+            updateToggleButtonText();
             initBot();
         }
 
@@ -343,6 +422,7 @@
             const randomIndex = Math.floor(Math.random() * intros.length);
             appendMessage('bot', intros[randomIndex], true);
             renderMainOptions();
+            updateToggleButtonText();
         }
 
         function renderMainOptions() {
@@ -384,7 +464,9 @@
                 optionsButtons.appendChild(btn);
             });
 
-            document.getElementById('options-container').scrollTop = 0;
+            if (!optionsExpanded) {
+                toggleOptions();
+            }
         }
 
         function appendMessage(sender, text, isHtml = false) {
@@ -426,8 +508,9 @@
             appendMessage('user', ui.serviceChosen(serviceName));
             setTimeout(() => {
                 const waUrl = createWhatsAppUrl(msg);
+                // Butang WhatsApp dengan kelas denyut hijau wa-pulse
                 const botResponse = ui.rightChoice(serviceName) + `
-                    <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-2 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                    <a href="${waUrl}" target="_blank" class="wa-pulse pulse-btn inline-flex items-center gap-2 justify-center w-full mt-2 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                         ${ui.waBtn}
                     </a>
@@ -445,6 +528,7 @@
             resetBtn.innerHTML = ui.resetBtn;
             resetBtn.onclick = renderMainOptions;
             optionsButtons.appendChild(resetBtn);
+            if (!optionsExpanded) toggleOptions();
         }
 
         function handleFormSubmit(event) {
@@ -471,7 +555,7 @@
                 const waUrl = createWhatsAppUrl(text);
                 if (matchedCategory) {
                     const botResponse = ui.understandingMsg(text, matchedAdvice) + `
-                        <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                        <a href="${waUrl}" target="_blank" class="wa-pulse pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                             ${ui.waDiscussBtn}
                         </a>
@@ -480,7 +564,7 @@
                     selectCategory(matchedCategory);
                 } else {
                     const botResponse = ui.genericReply(text) + `
-                        <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                        <a href="${waUrl}" target="_blank" class="wa-pulse pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                             ${ui.waContinueBtn}
                         </a>
@@ -491,7 +575,6 @@
             }, 600);
         }
 
-        // Mula
         window.onload = () => {
             langIcon.textContent = '🇲🇾';
             langText.textContent = 'BM';
