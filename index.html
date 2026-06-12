@@ -20,6 +20,12 @@
             50% { border-color: rgba(41, 69, 130, 0.6); }
         }
         .pulse-btn { animation: pulse-border 2s infinite; }
+        .lang-btn {
+            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        .lang-btn:hover { transform: scale(1.05); }
     </style>
 </head>
 <body class="h-screen w-full flex items-center justify-center p-0 m-0 overflow-hidden">
@@ -28,43 +34,23 @@
         <div class="absolute -top-12 -left-12 w-48 h-48 bg-[#294582]/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-12 -right-12 w-48 h-48 bg-[#294582]/15 rounded-full blur-3xl pointer-events-none"></div>
 
+        <!-- Butang Tukar Bahasa (Terapung di penjuru kanan atas) -->
+        <button id="langToggle" class="absolute top-3 right-3 z-20 bg-white/80 backdrop-blur-sm border border-white/50 text-[#294582] shadow-lg rounded-full py-1.5 px-3 lang-btn flex items-center gap-1" onclick="toggleLanguage()">
+            <span id="langIcon">🇲🇾</span>
+            <span id="langText">BM</span>
+        </button>
+
         <!-- Ruang sejarah sembang -->
-        <div id="chat-history" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 relative z-10">
-            <!-- Mesej alu-aluan statik (dikemas kini) -->
-            <div class="flex items-start gap-2.5">
-                <div class="w-8 h-8 rounded-full bg-[#294582] flex items-center justify-center text-white shrink-0 shadow-md">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4.5 h-4.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21L14.907 18M18 10.5c0 2.295-.824 4.397-2.185 6.03M18 10.5a7.5 7.5 0 10-15.793 3.21m15.793-3.21a9.201 9.201 0 011.603 4.93C19.39 18.261 16.59 21 13.125 21a9.204 9.204 0 01-1.397-.107L13.5 18M18 10.5a7.5 7.5 0 00-1.5-4.5" />
-                    </svg>
-                </div>
-                <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 border border-[#294582]/10 bg-white/80 rounded-2xl rounded-tl-none shadow-sm">
-                    <p class="text-sm font-semibold text-[#294582] mb-1">Syno Assistant</p>
-                    <p class="text-xs text-slate-700 leading-relaxed">
-                        Selamat datang ke <span class="font-bold text-[#294582]">Synotech Computer Sales and Services</span>! 🛠️ 
-                        <br><br>
-                        Kami sedia membantu membaiki laptop, komputer desktop, upgrade, servis printer dan membekalkan aksesori berkualiti.
-                        <br><br>
-                        📍 Lokasi kami di Pantai Batu Buruk, Kuala Terengganu.<br>
-                        <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">
-                            Lihat di Google Maps
-                        </a>
-                        <br><br>
-                        Sila pilih kategori masalah anda di bawah atau taip masalah anda terus dalam ruangan sembang.
-                    </p>
-                </div>
-            </div>
-        </div>
+        <div id="chat-history" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 relative z-10"></div>
 
         <!-- Panel bawah (pilihan + input) -->
         <div class="bg-white/70 backdrop-blur-md border-t border-[#294582]/10 p-3 relative z-10">
             <div id="options-container" class="mb-3 max-h-48 overflow-y-auto">
                 <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5 px-1 flex items-center gap-1">
-                    <span>💡 Pilihan Pintar</span>
+                    <span id="options-label">💡 Pilihan Pintar</span>
                     <span id="current-menu" class="text-[#294582] text-[9px] bg-[#294582]/10 px-1.5 py-0.5 rounded">Utama</span>
                 </p>
-                <div id="options-buttons" class="flex flex-wrap gap-1.5">
-                    <!-- Butang dinamik disisipkan oleh JS -->
-                </div>
+                <div id="options-buttons" class="flex flex-wrap gap-1.5"></div>
             </div>
 
             <form id="chat-form" onsubmit="handleFormSubmit(event)" class="flex items-center gap-2">
@@ -86,116 +72,296 @@
         const chatHistory = document.getElementById('chat-history');
         const optionsButtons = document.getElementById('options-buttons');
         const currentMenuLabel = document.getElementById('current-menu');
+        const optionsLabel = document.getElementById('options-label');
         const userInput = document.getElementById('user-input');
+        const langIcon = document.getElementById('langIcon');
+        const langText = document.getElementById('langText');
 
         let currentLevel = "main";
+        let currentLang = "ms"; // 'ms' atau 'en'
 
-        // Data perkhidmatan (AI telah dikeluarkan)
-        const serviceData = {
-            main: [
-                { id: "repair", label: "🛠️ Repair & Diagnostik", icon: "🔧" },
-                { id: "upgrade", label: "⚡ Upgrade & Windows", icon: "🚀" },
-                { id: "maintenance", label: "🧹 Cuci & Servis Habuk", icon: "🧼" },
-                { id: "data_software", label: "💾 Data & Software", icon: "📀" },
-                { id: "networking", label: "🌐 Network & WiFi Support", icon: "📶" },
-                { id: "printer", label: "🖨️ Printer Services", icon: "🖨️" },
-                { id: "jualan", label: "💻 Jualan Laptop/PC", icon: "🛒" },
-                { id: "advice", label: "📋 Pemeriksaan & Nasihat", icon: "💬" }
-            ],
-            repair: {
-                title: "Baik Pulih & Diagnostik",
-                items: [
-                    { name: "Repair Laptop", msg: "Saya mahu hantar laptop untuk dibaiki di kedai." },
-                    { name: "Repair Komputer Desktop", msg: "Saya perlukan bantuan untuk baiki komputer desktop saya." },
-                    { name: "Diagnostik Kerosakan", msg: "Laptop/PC saya mengalami masalah dan saya mahu buat diagnostik penuh." },
-                    { name: "Repair Motherboard", msg: "Motherboard laptop/PC saya disyaki rosak, mahu tahu sebut harga baiki." },
-                    { name: "Laptop Tidak Boleh ON", msg: "Laptop saya langsung tidak boleh dihidupkan (No Power)." },
-                    { name: "Masalah Overheating / Panas", msg: "Laptop/PC saya selalu padam sendiri sebab terlampau panas." }
-                ]
-            },
-            upgrade: {
-                title: "Upgrade & Prestasi",
-                items: [
-                    { name: "Upgrade SSD (Laju 10x)", msg: "Saya nak upgrade SSD untuk lajukan laptop/PC saya." },
-                    { name: "Upgrade RAM", msg: "Saya mahu tambah/upgrade RAM laptop/komputer saya." },
-                    { name: "Pemasangan Semula Windows", msg: "Saya ingin install semula / format Windows baharu." },
-                    { name: "Format & Reinstall OS", msg: "Komputer slow, saya nak format bersih semula seluruh sistem operasi." }
-                ]
-            },
-            maintenance: {
-                title: "Servis Penyelenggaraan",
-                items: [
-                    { name: "Servis Pembersihan Laptop", msg: "Saya mahu hantar laptop untuk cuci habuk bahagian dalam." },
-                    { name: "Tukar Thermal Paste", msg: "Saya nak tukar thermal paste baru untuk turunkan suhu CPU." },
-                    { name: "Servis Kipas (Fan Cleaning)", msg: "Kipas laptop saya berbunyi bising / tidak berpusing lancar." },
-                    { name: "Pemeriksaan Kesihatan Komputer", msg: "Mahu buat general check-up kesihatan hard disk dan sistem komputer." }
-                ]
-            },
-            data_software: {
-                title: "Data & Perisian",
-                items: [
-                    { name: "Backup Data", msg: "Saya mahu buat backup data penting saya sebelum hilang." },
-                    { name: "Pemindahan Data (Transfer)", msg: "Saya nak pindahkan semua data dari laptop lama ke laptop baru." },
-                    { name: "Pemasangan Software", msg: "Saya memerlukan bantuan pemasangan software / aplikasi pejabat." },
-                    { name: "Buang Virus & Malware", msg: "Laptop saya kena virus, mahu buat pembersihan virus." }
-                ]
-            },
-            networking: {
-                title: "Networking & IT Support",
-                items: [
-                    { name: "Setup Rangkaian (Networking)", msg: "Saya nak setup rangkaian kabel LAN/network di rumah atau pejabat." },
-                    { name: "Konfigurasi Router & WiFi", msg: "Masalah router / WiFi tidak stabil, perlukan konfigurasi semula." },
-                    { name: "IT Support Perniagaan", msg: "Mahu berbincang tentang khidmat IT Support bulanan/ad-hoc untuk perniagaan kecil saya." }
-                ]
-            },
-            printer: {
-                title: "Printer Services",
-                items: [
-                    { name: "Servis / Repair Printer", msg: "Printer saya ada masalah (paper jam / error / dakwat tidak keluar) dan perlu dibaiki." },
-                    { name: "Servis Percetakan", msg: "Ada khidmat print dokumen/percetakan?" }
-                ]
-            },
-            jualan: {
-                title: "Jualan Peranti & Aksesori",
-                items: [
-                    { name: "Beli Laptop Baru", msg: "Saya sedang mencari laptop baharu di Synotech Batu Buruk." },
-                    { name: "Beli Laptop Refurbished / Terpakai", msg: "Saya berminat untuk melihat stok laptop terpakai bajet rendah." },
-                    { name: "Custom Desktop PC", msg: "Saya nak pasang / custom spec komputer desktop mengikut bajet saya." },
-                    { name: "Aksesori Komputer", msg: "Saya mencari aksesori tambahan (mouse, keyboard, kabel, adapter, dsb)." }
-                ]
-            },
-            advice: {
-                title: "Pemeriksaan & Nasihat",
-                items: [
-                    { name: "Semakan Sebelum Beli Laptop", msg: "Saya perlukan nasihat spec laptop mana yang paling sesuai sebelum membeli." },
-                    { name: "Cadangan Spec Ikut Bajet", msg: "Saya ada bajet tertentu, boleh bantu cadangkan spec terbaik?" },
-                    { name: "Konsultasi Repair vs Upgrade", msg: "Saya runsing sama ada mahu repair komputer lama atau upgrade sahaja. Boleh beri nasihat?" }
-                ]
+        // Fungsi untuk mendapatkan data perkhidmatan mengikut bahasa
+        function getServiceData(lang) {
+            const isMs = (lang === 'ms');
+            return {
+                main: [
+                    { id: "repair", label: isMs ? "🛠️ Repair & Diagnostik" : "🛠️ Repair & Diagnostics", icon: "🔧" },
+                    { id: "upgrade", label: isMs ? "⚡ Upgrade & Windows" : "⚡ Upgrade & Windows", icon: "🚀" },
+                    { id: "maintenance", label: isMs ? "🧹 Cuci & Servis Habuk" : "🧹 Cleaning & Maintenance", icon: "🧼" },
+                    { id: "data_software", label: isMs ? "💾 Data & Software" : "💾 Data & Software", icon: "📀" },
+                    { id: "networking", label: isMs ? "🌐 Network & WiFi Support" : "🌐 Network & WiFi Support", icon: "📶" },
+                    { id: "printer", label: isMs ? "🖨️ Printer Services" : "🖨️ Printer Services", icon: "🖨️" },
+                    { id: "jualan", label: isMs ? "💻 Jualan Laptop/PC" : "💻 Sales & Devices", icon: "🛒" },
+                    { id: "advice", label: isMs ? "📋 Pemeriksaan & Nasihat" : "📋 Consultation & Advice", icon: "💬" }
+                ],
+                repair: {
+                    title: isMs ? "Baik Pulih & Diagnostik" : "Repair & Diagnostics",
+                    items: [
+                        { name: isMs ? "Repair Laptop" : "Laptop Repair", msg: isMs ? "Saya mahu hantar laptop untuk dibaiki di kedai." : "I want to send my laptop for repair at your shop." },
+                        { name: isMs ? "Repair Komputer Desktop" : "Desktop PC Repair", msg: isMs ? "Saya perlukan bantuan untuk baiki komputer desktop saya." : "I need help repairing my desktop computer." },
+                        { name: isMs ? "Diagnostik Kerosakan" : "Damage Diagnostics", msg: isMs ? "Laptop/PC saya mengalami masalah dan saya mahu buat diagnostik penuh." : "My laptop/PC has issues and I need a full diagnostic." },
+                        { name: isMs ? "Repair Motherboard" : "Motherboard Repair", msg: isMs ? "Motherboard laptop/PC saya disyaki rosak, mahu tahu sebut harga baiki." : "My laptop/PC motherboard is suspected faulty, need a quote." },
+                        { name: isMs ? "Laptop Tidak Boleh ON" : "Laptop Won't Power On", msg: isMs ? "Laptop saya langsung tidak boleh dihidupkan (No Power)." : "My laptop has no power, cannot turn on." },
+                        { name: isMs ? "Masalah Overheating / Panas" : "Overheating Issues", msg: isMs ? "Laptop/PC saya selalu padam sendiri sebab terlampau panas." : "My laptop/PC keeps shutting down due to overheating." }
+                    ]
+                },
+                upgrade: {
+                    title: isMs ? "Upgrade & Prestasi" : "Upgrade & Performance",
+                    items: [
+                        { name: isMs ? "Upgrade SSD (Laju 10x)" : "Upgrade SSD (10x Faster)", msg: isMs ? "Saya nak upgrade SSD untuk lajukan laptop/PC saya." : "I want to upgrade to SSD to speed up my laptop/PC." },
+                        { name: isMs ? "Upgrade RAM" : "Upgrade RAM", msg: isMs ? "Saya mahu tambah/upgrade RAM laptop/komputer saya." : "I want to add/upgrade RAM for my laptop/computer." },
+                        { name: isMs ? "Pemasangan Semula Windows" : "Windows Reinstallation", msg: isMs ? "Saya ingin install semula / format Windows baharu." : "I want to reinstall/format Windows fresh." },
+                        { name: isMs ? "Format & Reinstall OS" : "Format & Reinstall OS", msg: isMs ? "Komputer slow, saya nak format bersih semula seluruh sistem operasi." : "My computer is slow, I want a clean format of the entire operating system." }
+                    ]
+                },
+                maintenance: {
+                    title: isMs ? "Servis Penyelenggaraan" : "Maintenance Services",
+                    items: [
+                        { name: isMs ? "Servis Pembersihan Laptop" : "Laptop Cleaning Service", msg: isMs ? "Saya mahu hantar laptop untuk cuci habuk bahagian dalam." : "I want to send my laptop for internal dust cleaning." },
+                        { name: isMs ? "Tukar Thermal Paste" : "Thermal Paste Replacement", msg: isMs ? "Saya nak tukar thermal paste baru untuk turunkan suhu CPU." : "I want to replace the thermal paste to lower CPU temperature." },
+                        { name: isMs ? "Servis Kipas (Fan Cleaning)" : "Fan Cleaning Service", msg: isMs ? "Kipas laptop saya berbunyi bising / tidak berpusing lancar." : "My laptop fan is noisy or not spinning smoothly." },
+                        { name: isMs ? "Pemeriksaan Kesihatan Komputer" : "PC Health Check", msg: isMs ? "Mahu buat general check-up kesihatan hard disk dan sistem komputer." : "I want a general health check for hard disk and computer system." }
+                    ]
+                },
+                data_software: {
+                    title: isMs ? "Data & Perisian" : "Data & Software",
+                    items: [
+                        { name: isMs ? "Backup Data" : "Data Backup", msg: isMs ? "Saya mahu buat backup data penting saya sebelum hilang." : "I want to backup my important data before it's lost." },
+                        { name: isMs ? "Pemindahan Data (Transfer)" : "Data Transfer", msg: isMs ? "Saya nak pindahkan semua data dari laptop lama ke laptop baru." : "I want to transfer all data from old laptop to new laptop." },
+                        { name: isMs ? "Pemasangan Software" : "Software Installation", msg: isMs ? "Saya memerlukan bantuan pemasangan software / aplikasi pejabat." : "I need help installing software / office applications." },
+                        { name: isMs ? "Buang Virus & Malware" : "Virus & Malware Removal", msg: isMs ? "Laptop saya kena virus, mahu buat pembersihan virus." : "My laptop is infected with virus, I need virus cleaning." }
+                    ]
+                },
+                networking: {
+                    title: isMs ? "Networking & IT Support" : "Networking & IT Support",
+                    items: [
+                        { name: isMs ? "Setup Rangkaian (Networking)" : "Network Setup", msg: isMs ? "Saya nak setup rangkaian kabel LAN/network di rumah atau pejabat." : "I want to set up a LAN/network at home or office." },
+                        { name: isMs ? "Konfigurasi Router & WiFi" : "Router & WiFi Configuration", msg: isMs ? "Masalah router / WiFi tidak stabil, perlukan konfigurasi semula." : "Router / WiFi unstable, needs reconfiguration." },
+                        { name: isMs ? "IT Support Perniagaan" : "Business IT Support", msg: isMs ? "Mahu berbincang tentang khidmat IT Support bulanan/ad-hoc untuk perniagaan kecil saya." : "I want to discuss monthly/ad-hoc IT support for my small business." }
+                    ]
+                },
+                printer: {
+                    title: isMs ? "Printer Services" : "Printer Services",
+                    items: [
+                        { name: isMs ? "Servis / Repair Printer" : "Printer Repair", msg: isMs ? "Printer saya ada masalah (paper jam / error / dakwat tidak keluar) dan perlu dibaiki." : "My printer has issues (paper jam / error / ink not coming out) and needs repair." },
+                        { name: isMs ? "Servis Percetakan" : "Printing Services", msg: isMs ? "Ada khidmat print dokumen/percetakan?" : "Do you offer document printing services?" }
+                    ]
+                },
+                jualan: {
+                    title: isMs ? "Jualan Peranti & Aksesori" : "Sales & Accessories",
+                    items: [
+                        { name: isMs ? "Beli Laptop Baru" : "Buy New Laptop", msg: isMs ? "Saya sedang mencari laptop baharu di Synotech Batu Buruk." : "I'm looking for a new laptop at Synotech Batu Buruk." },
+                        { name: isMs ? "Beli Laptop Refurbished / Terpakai" : "Buy Refurbished/Used Laptop", msg: isMs ? "Saya berminat untuk melihat stok laptop terpakai bajet rendah." : "I'm interested in low-budget used laptops." },
+                        { name: isMs ? "Custom Desktop PC" : "Custom Desktop PC", msg: isMs ? "Saya nak pasang / custom spec komputer desktop mengikut bajet saya." : "I want to build/custom spec a desktop PC based on my budget." },
+                        { name: isMs ? "Aksesori Komputer" : "Computer Accessories", msg: isMs ? "Saya mencari aksesori tambahan (mouse, keyboard, kabel, adapter, dsb)." : "I'm looking for extra accessories (mouse, keyboard, cables, adapters, etc)." }
+                    ]
+                },
+                advice: {
+                    title: isMs ? "Pemeriksaan & Nasihat" : "Consultation & Advice",
+                    items: [
+                        { name: isMs ? "Semakan Sebelum Beli Laptop" : "Pre-Purchase Laptop Check", msg: isMs ? "Saya perlukan nasihat spec laptop mana yang paling sesuai sebelum membeli." : "I need advice on which laptop spec suits me before buying." },
+                        { name: isMs ? "Cadangan Spec Ikut Bajet" : "Spec Recommendation by Budget", msg: isMs ? "Saya ada bajet tertentu, boleh bantu cadangkan spec terbaik?" : "I have a certain budget, can you suggest the best spec?" },
+                        { name: isMs ? "Konsultasi Repair vs Upgrade" : "Repair vs Upgrade Consultation", msg: isMs ? "Saya runsing sama ada mahu repair komputer lama atau upgrade sahaja. Boleh beri nasihat?" : "I'm torn between repairing my old computer or upgrading. Any advice?" }
+                    ]
+                }
+            };
+        }
+
+        // Pangkalan kata kunci tempatan (dwibahasa)
+        function getKeywordDatabase(lang) {
+            const isMs = (lang === 'ms');
+            return [
+                { keywords: ["slow", "lembab", "laju", "ssd", "ram", "upgrade", "tambah", "pantas"], category: "upgrade", 
+                  advice: isMs ? "Masalah komputer lembab biasanya berpunca daripada penggunaan hard disk lama (HDD) atau RAM yang tidak mencukupi. Kami amat menyarankan upgrade ke SSD dan tambah RAM untuk peningkatan kelajuan sehingga 10 kali ganda!" 
+                                 : "Slow computer issues are usually caused by an old hard disk (HDD) or insufficient RAM. We highly recommend upgrading to SSD and adding more RAM for up to 10x speed improvement!" },
+                { keywords: ["format", "windows", "reinstall", "sistem", "os", "operating system"], category: "upgrade", 
+                  advice: isMs ? "Sistem operasi yang korup atau sudah lama boleh menyebabkan komputer tidak stabil. Kami menyediakan servis format & reinstall Windows bersih berserta software asas." 
+                                 : "A corrupted or old operating system can cause instability. We provide clean format & reinstall Windows with basic software." },
+                { keywords: ["panas", "habuk", "kipas", "thermal paste", "cuci", "vacuum", "bising", "padam sendiri", "shutdown"], category: "maintenance", 
+                  advice: isMs ? "Komputer yang terlampau panas (overheating) biasanya berpunca daripada habuk yang tersumbat di kipas dan thermal paste yang telah kering. Kami menawarkan servis cuci dalaman & tukar thermal paste premium." 
+                                 : "Overheating computers are usually caused by dust clogging the fan and dried thermal paste. We offer internal cleaning & premium thermal paste replacement." },
+                { keywords: ["skrin", "screen", "pecah", "crack", "display", "gelap", "blue screen", "bsod", "rosak", "repair", "baiki", "no power", "tidak boleh on", "motherboard", "keyboard"], category: "repair", 
+                  advice: isMs ? "Kami mahir mengendalikan pelbagai baik pulih hardware termasuk penukaran skrin pecah, keyboard rosak, masalah laptop tidak boleh ON, kerosakan motherboard, dan masalah komponen lain." 
+                                 : "We are skilled in various hardware repairs including broken screen replacement, faulty keyboard, laptop not powering on, motherboard damage, and other component issues." },
+                { keywords: ["printer", "cetak", "print", "dakwat", "ink", "paper jam"], category: "printer", 
+                  advice: isMs ? "Kami menyediakan servis baik pulih printer serta konsultasi penyelenggaraan bagi printer jenis inkjet mahupun laserjet." 
+                                 : "We provide printer repair services and maintenance consultations for both inkjet and laserjet printers." },
+                { keywords: ["virus", "malware", "adware", "data hilang", "backup", "transfer", "pindah data", "software", "office"], category: "data_software", 
+                  advice: isMs ? "Lindungi data anda daripada serangan ransomware/virus. Kami menyediakan servis membersihkan virus, backup data, pemindahan data ke peranti baru, dan pemasangan perisian penting." 
+                                 : "Protect your data from ransomware/virus attacks. We provide virus cleaning, data backup, data transfer to new devices, and essential software installation." },
+                { keywords: ["wifi", "router", "internet", "lan", "network", "kabel", "unifi"], category: "networking", 
+                  advice: isMs ? "Kami menawarkan khidmat pemasangan rangkaian (networking), troubleshoot router, pemasangan WiFi di kediaman serta pejabat kecil." 
+                                 : "We offer network installation services, router troubleshooting, WiFi setup for homes and small offices." },
+                { keywords: ["beli", "harga", "laptop baru", "second", "refurbished", "terpakai", "aksesori", "mouse", "keyboard"], category: "jualan", 
+                  advice: isMs ? "Kami ada menjual pelbagai pilihan laptop baru, laptop terpakai berkualiti (refurbished), komputer desktop, dan aksesori gajet pada harga yang sangat berpatutan." 
+                                 : "We sell a variety of new laptops, quality used (refurbished) laptops, desktop computers, and gadget accessories at very reasonable prices." }
+            ];
+        }
+
+        // Mesej alu-aluan (dwibahasa)
+        function getIntroMessages(lang) {
+            const isMs = (lang === 'ms');
+            if (isMs) {
+                return [
+                    `Selamat datang ke <strong>Synotech Computer Sales and Services</strong>! 🛠️ <br><br>
+                    Kami sedia membantu membaiki laptop, komputer desktop, upgrade, servis printer dan membekalkan aksesori berkualiti.
+                    <br><br>
+                    📍 Lokasi kami di Pantai Batu Buruk, Kuala Terengganu.<br>
+                    <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">Lihat di Google Maps</a>
+                    <br><br>
+                    Sila pilih kategori masalah anda di bawah atau taip masalah anda terus dalam ruangan sembang.`,
+
+                    `Hai! 👋 Terima kasih singgah ke <strong>Synotech Computer Sales and Services</strong>.<br><br>
+                    Kami pakar dalam baik pulih komputer, laptop, servis pencetak, dan naik taraf sistem. Jangan ragu untuk bertanya!
+                    <br><br>
+                    🗺️ Kami terletak di Pantai Batu Buruk, Kuala Terengganu — <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">klik sini untuk peta</a>.
+                    <br><br>
+                    Gunakan menu di bawah atau taip masalah anda secara terus.`,
+
+                    `Apa khabar! Selamat datang ke kedai kami – <strong>Synotech Computer Sales and Services</strong>.<br><br>
+                    Dari baiki laptop rosak, masalah overheating, hingga pasang WiFi pejabat, kami sedia bantu.
+                    <br><br>
+                    📍 Cari kami di Pantai Batu Buruk, Kuala Terengganu. <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">Google Maps</a>
+                    <br><br>
+                    Pilih perkhidmatan yang anda perlukan di bawah.`,
+
+                    `Hai, terima kasih hubungi Synotech! 👨‍💻<br><br>
+                    Anda kini berhubung dengan <strong>Synotech Computer Sales and Services</strong>, pakar komputer di Kuala Terengganu.
+                    <br><br>
+                    📍 Lokasi kami di Pantai Batu Buruk — <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">Lihat peta</a>.
+                    <br><br>
+                    Ceritakan masalah komputer anda atau pilih kategori di bawah.`,
+
+                    `Salam sejahtera! 🤝<br><br>
+                    <strong>Synotech Computer Sales and Services</strong> mengalu-alukan anda. Kami menyediakan servis repair, upgrade, cuci habuk, jualan laptop, dan banyak lagi.
+                    <br><br>
+                    🗺️ Datang terus ke kedai kami di Pantai Batu Buruk, Kuala Terengganu (<a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">peta</a>).
+                    <br><br>
+                    Untuk mula, sila pilih kategori di bawah atau taip kerosakan anda.`
+                ];
+            } else {
+                return [
+                    `Welcome to <strong>Synotech Computer Sales and Services</strong>! 🛠️ <br><br>
+                    We are ready to help with laptop repairs, desktop computers, upgrades, printer services, and quality accessories.
+                    <br><br>
+                    📍 Our location: Pantai Batu Buruk, Kuala Terengganu.<br>
+                    <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">View on Google Maps</a>
+                    <br><br>
+                    Please select your problem category below or type your issue directly in the chat.`,
+
+                    `Hi! 👋 Thanks for visiting <strong>Synotech Computer Sales and Services</strong>.<br><br>
+                    We specialize in computer & laptop repair, printer servicing, and system upgrades. Don't hesitate to ask!
+                    <br><br>
+                    🗺️ We are located at Pantai Batu Buruk, Kuala Terengganu — <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">click here for map</a>.
+                    <br><br>
+                    Use the menu below or type your problem directly.`,
+
+                    `How are you! Welcome to our store – <strong>Synotech Computer Sales and Services</strong>.<br><br>
+                    From fixing a broken laptop, overheating issues, to setting up office WiFi, we are here to help.
+                    <br><br>
+                    📍 Find us at Pantai Batu Buruk, Kuala Terengganu. <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">Google Maps</a>
+                    <br><br>
+                    Choose the service you need below.`,
+
+                    `Hi, thanks for reaching out to Synotech! 👨‍💻<br><br>
+                    You're now connected with <strong>Synotech Computer Sales and Services</strong>, computer experts in Kuala Terengganu.
+                    <br><br>
+                    📍 Our location: Pantai Batu Buruk — <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">View map</a>.
+                    <br><br>
+                    Tell us about your computer problem or select a category below.`,
+
+                    `Greetings! 🤝<br><br>
+                    <strong>Synotech Computer Sales and Services</strong> welcomes you. We provide repair, upgrade, dust cleaning, laptop sales, and much more.
+                    <br><br>
+                    🗺️ Visit our store at Pantai Batu Buruk, Kuala Terengganu (<a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">map</a>).
+                    <br><br>
+                    To start, please choose a category below or type your issue.`
+                ];
             }
-        };
+        }
 
-        // Pangkalan kata kunci tempatan
-        const keywordDatabase = [
-            { keywords: ["slow", "lembab", "laju", "ssd", "ram", "upgrade", "tambah", "pantas"], category: "upgrade", advice: "Masalah komputer lembab biasanya berpunca daripada penggunaan hard disk lama (HDD) atau RAM yang tidak mencukupi. Kami amat menyarankan upgrade ke SSD dan tambah RAM untuk peningkatan kelajuan sehingga 10 kali ganda!" },
-            { keywords: ["format", "windows", "reinstall", "sistem", "os", "operating system"], category: "upgrade", advice: "Sistem operasi yang korup atau sudah lama boleh menyebabkan komputer tidak stabil. Kami menyediakan servis format & reinstall Windows bersih berserta software asas." },
-            { keywords: ["panas", "habuk", "kipas", "thermal paste", "cuci", "vacuum", "bising", "padam sendiri", "shutdown"], category: "maintenance", advice: "Komputer yang terlampau panas (overheating) biasanya berpunca daripada habuk yang tersumbat di kipas dan thermal paste yang telah kering. Kami menawarkan servis cuci dalaman & tukar thermal paste premium." },
-            { keywords: ["skrin", "screen", "pecah", "crack", "display", "gelap", "blue screen", "bsod", "rosak", "repair", "baiki", "no power", "tidak boleh on", "motherboard", "keyboard"], category: "repair", advice: "Kami mahir mengendalikan pelbagai baik pulih hardware termasuk penukaran skrin pecah, keyboard rosak, masalah laptop tidak boleh ON, kerosakan motherboard, dan masalah komponen lain." },
-            { keywords: ["printer", "cetak", "print", "dakwat", "ink", "paper jam"], category: "printer", advice: "Kami menyediakan servis baik pulih printer serta konsultasi penyelenggaraan bagi printer jenis inkjet mahupun laserjet." },
-            { keywords: ["virus", "malware", "adware", "data hilang", "backup", "transfer", "pindah data", "software", "office"], category: "data_software", advice: "Lindungi data anda daripada serangan ransomware/virus. Kami menyediakan servis membersihkan virus, backup data, pemindahan data ke peranti baru, dan pemasangan perisian penting." },
-            { keywords: ["wifi", "router", "internet", "lan", "network", "kabel", "unifi"], category: "networking", advice: "Kami menawarkan khidmat pemasangan rangkaian (networking), troubleshoot router, pemasangan WiFi di kediaman serta pejabat kecil." },
-            { keywords: ["beli", "harga", "laptop baru", "second", "refurbished", "terpakai", "aksesori", "mouse", "keyboard"], category: "jualan", advice: "Kami ada menjual pelbagai pilihan laptop baru, laptop terpakai berkualiti (refurbished), komputer desktop, dan aksesori gajet pada harga yang sangat berpatutan." }
-        ];
+        // Teks antara muka lain (dwibahasa)
+        function getUITexts(lang) {
+            const isMs = (lang === 'ms');
+            return {
+                assistantName: "Syno Assistant",
+                smartOptions: isMs ? "💡 Pilihan Pintar" : "💡 Smart Options",
+                mainMenu: isMs ? "Utama" : "Main",
+                backBtn: isMs ? "🔙 Menu Utama" : "🔙 Main Menu",
+                resetBtn: isMs ? "🔄 Tanya Mengenai Servis Lain" : "🔄 Ask About Another Service",
+                userLabel: isMs ? "Anda" : "You",
+                inputPlaceholder: isMs ? "Taip kerosakan anda disini..." : "Type your issue here...",
+                serviceChosen: (name) => isMs ? `Saya berminat dengan: *${name}*` : `I'm interested in: *${name}*`,
+                rightChoice: (name) => isMs 
+                    ? `Satu pilihan yang tepat! Kami sedia membantu anda untuk urusan <strong>${name}</strong> di Synotech Batu Buruk.<br><br>Untuk respon terpantas, hantarkan mesej tempahan/pertanyaan ini terus ke talian WhatsApp rasmi kami.<br><br>`
+                    : `Great choice! We are ready to assist you with <strong>${name}</strong> at Synotech Batu Buruk.<br><br>For the fastest response, send this booking/inquiry directly to our official WhatsApp line.<br><br>`,
+                waBtn: isMs ? "Hubungi WhatsApp Synotech" : "Contact Synotech WhatsApp",
+                understandingMsg: (text, advice) => isMs 
+                    ? `Saya faham masalah anda.<br><br>💡 <strong>Cadangan Synotech:</strong><br>${advice}<br><br>Sila klik butang di bawah untuk menghantar mesej rujukan masalah anda ("<em>${text}</em>") terus ke juruteknik kami di WhatsApp untuk semakan lanjut.`
+                    : `I understand your problem.<br><br>💡 <strong>Synotech Suggestion:</strong><br>${advice}<br><br>Click the button below to send your issue reference ("<em>${text}</em>") directly to our technician on WhatsApp for further review.`,
+                waDiscussBtn: isMs ? "Bincang di WhatsApp Sekarang" : "Discuss on WhatsApp Now",
+                genericReply: (text) => isMs 
+                    ? `Terima kasih atas mesej anda.<br><br>Pertanyaan anda mengenai "<em>${text}</em>" sedia untuk dirujuk ke bahagian sokongan teknikal Synotech.<br><br>Sila klik butang di bawah untuk terus menghantar soalan ini secara langsung ke WhatsApp kami di <strong>+601174407112</strong>.`
+                    : `Thank you for your message.<br><br>Your inquiry about "<em>${text}</em>" is ready to be forwarded to Synotech technical support.<br><br>Click the button below to send this question directly to our WhatsApp at <strong>+601174407112</strong>.`,
+                waContinueBtn: isMs ? "Teruskan ke WhatsApp" : "Continue to WhatsApp"
+            };
+        }
 
+        // Fungsi bantuan untuk mendapatkan teks antara muka
+        function UI() {
+            return getUITexts(currentLang);
+        }
+
+        // Fungsi untuk mendapatkan data perkhidmatan semasa
+        function serviceData() {
+            return getServiceData(currentLang);
+        }
+
+        function keywordDB() {
+            return getKeywordDatabase(currentLang);
+        }
+
+        // Bina WhatsApp URL (tetap guna bahasa pilihan)
+        function createWhatsAppUrl(customText) {
+            const baseUrl = "https://wa.me/" + WHATSAPP_NUMBER;
+            const prefix = currentLang === 'ms' ? "Hi Synotech Batu Buruk! Saya perlukan info mengenai servis ini:\n\n👉 *" : "Hi Synotech Batu Buruk! I need info about this service:\n\n👉 *";
+            const fullText = prefix + customText + "*";
+            return `${baseUrl}?text=${encodeURIComponent(fullText)}`;
+        }
+
+        // Fungsi togol bahasa
+        function toggleLanguage() {
+            currentLang = (currentLang === 'ms') ? 'en' : 'ms';
+            // Kemas kini butang bahasa
+            if (currentLang === 'ms') {
+                langIcon.textContent = '🇲🇾';
+                langText.textContent = 'BM';
+            } else {
+                langIcon.textContent = '🇬🇧';
+                langText.textContent = 'EN';
+            }
+            // Kosongkan sejarah sembang dan mula semula
+            chatHistory.innerHTML = '';
+            initBot();
+        }
+
+        // ========== FUNGSI UTAMA ==========
         function initBot() {
+            // Papar mesej alu-aluan rawak
+            const intros = getIntroMessages(currentLang);
+            const randomIndex = Math.floor(Math.random() * intros.length);
+            appendMessage('bot', intros[randomIndex], true);
             renderMainOptions();
         }
 
         function renderMainOptions() {
-            currentMenuLabel.innerText = "Kategori Utama";
+            const ui = UI();
+            currentMenuLabel.innerText = ui.mainMenu;
+            optionsLabel.innerText = ui.smartOptions;
             optionsButtons.innerHTML = "";
             currentLevel = "main";
 
-            serviceData.main.forEach(opt => {
+            serviceData().main.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = "bg-[#f0f0f0] hover:bg-[#294582] hover:text-white border border-[#294582]/20 text-[#294582] rounded-xl transition-all duration-200 text-xs font-semibold py-2 px-3 shadow-sm flex items-center gap-1 active:scale-95";
                 btn.innerHTML = opt.label;
@@ -205,8 +371,9 @@
         }
 
         function selectCategory(catId) {
-            const category = serviceData[catId];
+            const category = serviceData()[catId];
             if (!category) return;
+            const ui = UI();
 
             currentMenuLabel.innerText = category.title;
             optionsButtons.innerHTML = "";
@@ -214,7 +381,7 @@
 
             const backBtn = document.createElement('button');
             backBtn.className = "bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white rounded-xl transition-all duration-200 text-xs font-bold py-2 px-3 shadow-sm active:scale-95";
-            backBtn.innerHTML = "🔙 Menu Utama";
+            backBtn.innerHTML = ui.backBtn;
             backBtn.onclick = renderMainOptions;
             optionsButtons.appendChild(backBtn);
 
@@ -233,6 +400,7 @@
             const bubble = document.createElement('div');
             bubble.className = `flex items-start gap-2.5 ${sender === 'user' ? 'justify-end' : ''}`;
             const time = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+            const ui = UI();
 
             if (sender === 'bot') {
                 bubble.innerHTML = `
@@ -242,7 +410,7 @@
                         </svg>
                     </div>
                     <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 border border-[#294582]/10 bg-white/80 rounded-2xl rounded-tl-none shadow-sm">
-                        <p class="text-sm font-semibold text-[#294582] mb-1">Syno Assistant</p>
+                        <p class="text-sm font-semibold text-[#294582] mb-1">${ui.assistantName}</p>
                         <div class="text-xs text-slate-700 leading-relaxed">${isHtml ? text : text.replace(/\n/g, '<br>')}</div>
                         <span class="text-[9px] text-slate-400 mt-2 text-right">${time}</span>
                     </div>
@@ -250,7 +418,7 @@
             } else {
                 bubble.innerHTML = `
                     <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 bg-[#294582] text-[#f0f0f0] rounded-2xl rounded-tr-none shadow-md">
-                        <p class="text-sm font-semibold text-white mb-1">Anda</p>
+                        <p class="text-sm font-semibold text-white mb-1">${ui.userLabel}</p>
                         <p class="text-xs leading-relaxed">${text}</p>
                         <span class="text-[9px] text-white/60 mt-2 text-right">${time}</span>
                     </div>
@@ -263,17 +431,16 @@
         }
 
         function selectServiceItem(serviceName, msg) {
-            appendMessage('user', `Saya berminat dengan: *${serviceName}*`);
+            const ui = UI();
+            appendMessage('user', ui.serviceChosen(serviceName));
             setTimeout(() => {
                 const waUrl = createWhatsAppUrl(msg);
-                const botResponse = `
-                    Satu pilihan yang tepat! Kami sedia membantu anda untuk urusan <strong>${serviceName}</strong> di Synotech Batu Buruk.<br><br>
-                    Untuk respon terpantas, hantarkan mesej tempahan/pertanyaan ini terus ke talian WhatsApp rasmi kami.<br><br>
+                const botResponse = ui.rightChoice(serviceName) + `
                     <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-2 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
                         </svg>
-                        Hubungi WhatsApp Synotech
+                        ${ui.waBtn}
                     </a>
                 `;
                 appendMessage('bot', botResponse, true);
@@ -282,19 +449,13 @@
         }
 
         function offerResetOption() {
-            currentMenuLabel.innerText = "Tindakan Seterusnya";
+            const ui = UI();
             optionsButtons.innerHTML = "";
             const resetBtn = document.createElement('button');
             resetBtn.className = "bg-[#294582] text-white hover:bg-blue-800 rounded-xl transition-all duration-200 text-xs font-bold py-2 px-4 shadow-md active:scale-95";
-            resetBtn.innerHTML = "🔄 Tanya Mengenai Servis Lain";
+            resetBtn.innerHTML = ui.resetBtn;
             resetBtn.onclick = renderMainOptions;
             optionsButtons.appendChild(resetBtn);
-        }
-
-        function createWhatsAppUrl(customText) {
-            const baseUrl = "https://wa.me/" + WHATSAPP_NUMBER;
-            const fullText = `Hi Synotech Batu Buruk! Saya perlukan info mengenai servis ini:\n\n👉 *${customText}*`;
-            return `${baseUrl}?text=${encodeURIComponent(fullText)}`;
         }
 
         function handleFormSubmit(event) {
@@ -307,41 +468,36 @@
 
             let matchedCategory = null, matchedAdvice = "";
             const lowerText = text.toLowerCase();
-            for (let i = 0; i < keywordDatabase.length; i++) {
-                if (keywordDatabase[i].keywords.some(kw => lowerText.includes(kw))) {
-                    matchedCategory = keywordDatabase[i].category;
-                    matchedAdvice = keywordDatabase[i].advice;
+            const db = keywordDB();
+            for (let i = 0; i < db.length; i++) {
+                if (db[i].keywords.some(kw => lowerText.includes(kw))) {
+                    matchedCategory = db[i].category;
+                    matchedAdvice = db[i].advice;
                     break;
                 }
             }
 
+            const ui = UI();
             setTimeout(() => {
                 const waUrl = createWhatsAppUrl(text);
                 if (matchedCategory) {
-                    const botResponse = `
-                        Saya faham masalah anda.<br><br>
-                        💡 <strong>Cadangan Synotech:</strong><br>
-                        ${matchedAdvice}<br><br>
-                        Sila klik butang di bawah untuk menghantar mesej rujukan masalah anda ("<em>${text}</em>") terus ke juruteknik kami di WhatsApp untuk semakan lanjut.
+                    const botResponse = ui.understandingMsg(text, matchedAdvice) + `
                         <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
                             </svg>
-                            Bincang di WhatsApp Sekarang
+                            ${ui.waDiscussBtn}
                         </a>
                     `;
                     appendMessage('bot', botResponse, true);
                     selectCategory(matchedCategory);
                 } else {
-                    const botResponse = `
-                        Terima kasih atas mesej anda.<br><br>
-                        Pertanyaan anda mengenai "<em>${text}</em>" sedia untuk dirujuk ke bahagian sokongan teknikal Synotech.<br><br>
-                        Sila klik butang di bawah untuk terus menghantar soalan ini secara langsung ke WhatsApp kami di <strong>+601174407112</strong>.
+                    const botResponse = ui.genericReply(text) + `
                         <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
                             </svg>
-                            Teruskan ke WhatsApp
+                            ${ui.waContinueBtn}
                         </a>
                     `;
                     appendMessage('bot', botResponse, true);
@@ -350,8 +506,13 @@
             }, 600);
         }
 
-        // Mula
-        window.onload = initBot;
+        // Mulakan bot apabila halaman dimuatkan
+        window.onload = () => {
+            // Pastikan butang togol bahasa memaparkan bahasa asal (ms)
+            langIcon.textContent = '🇲🇾';
+            langText.textContent = 'BM';
+            initBot();
+        };
     </script>
 </body>
 </html>
