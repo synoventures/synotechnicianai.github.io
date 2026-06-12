@@ -26,15 +26,21 @@
             font-size: 11px;
         }
         .lang-btn:hover { transform: scale(1.05); }
+        .map-iframe {
+            width: 100%;
+            height: 180px;
+            border: 0;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body class="h-screen w-full flex items-center justify-center p-0 m-0 overflow-hidden">
     <div class="w-full h-full flex flex-col justify-between bg-white/45 backdrop-blur-xl border border-white/30 shadow-2xl relative overflow-hidden">
-        <!-- Hiasan latar -->
         <div class="absolute -top-12 -left-12 w-48 h-48 bg-[#294582]/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-12 -right-12 w-48 h-48 bg-[#294582]/15 rounded-full blur-3xl pointer-events-none"></div>
 
-        <!-- Butang Tukar Bahasa (Terapung di penjuru kanan atas) -->
+        <!-- Butang Tukar Bahasa -->
         <button id="langToggle" class="absolute top-3 right-3 z-20 bg-white/80 backdrop-blur-sm border border-white/50 text-[#294582] shadow-lg rounded-full py-1.5 px-3 lang-btn flex items-center gap-1" onclick="toggleLanguage()">
             <span id="langIcon">🇲🇾</span>
             <span id="langText">BM</span>
@@ -78,9 +84,9 @@
         const langText = document.getElementById('langText');
 
         let currentLevel = "main";
-        let currentLang = "ms"; // 'ms' atau 'en'
+        let currentLang = "ms";
 
-        // Fungsi untuk mendapatkan data perkhidmatan mengikut bahasa
+        // ------ DATA PERKHIDMATAN (dwibahasa) ------
         function getServiceData(lang) {
             const isMs = (lang === 'ms');
             return {
@@ -167,77 +173,82 @@
             };
         }
 
-        // Pangkalan kata kunci tempatan (dwibahasa)
+        // ------ KATA KUNCI TEMPATAN (dwibahasa) ------
         function getKeywordDatabase(lang) {
             const isMs = (lang === 'ms');
             return [
-                { keywords: ["slow", "lembab", "laju", "ssd", "ram", "upgrade", "tambah", "pantas"], category: "upgrade", 
-                  advice: isMs ? "Masalah komputer lembab biasanya berpunca daripada penggunaan hard disk lama (HDD) atau RAM yang tidak mencukupi. Kami amat menyarankan upgrade ke SSD dan tambah RAM untuk peningkatan kelajuan sehingga 10 kali ganda!" 
+                { keywords: ["slow", "lembab", "laju", "ssd", "ram", "upgrade", "tambah", "pantas"], category: "upgrade",
+                  advice: isMs ? "Masalah komputer lembab biasanya berpunca daripada penggunaan hard disk lama (HDD) atau RAM yang tidak mencukupi. Kami amat menyarankan upgrade ke SSD dan tambah RAM untuk peningkatan kelajuan sehingga 10 kali ganda!"
                                  : "Slow computer issues are usually caused by an old hard disk (HDD) or insufficient RAM. We highly recommend upgrading to SSD and adding more RAM for up to 10x speed improvement!" },
-                { keywords: ["format", "windows", "reinstall", "sistem", "os", "operating system"], category: "upgrade", 
-                  advice: isMs ? "Sistem operasi yang korup atau sudah lama boleh menyebabkan komputer tidak stabil. Kami menyediakan servis format & reinstall Windows bersih berserta software asas." 
+                { keywords: ["format", "windows", "reinstall", "sistem", "os", "operating system"], category: "upgrade",
+                  advice: isMs ? "Sistem operasi yang korup atau sudah lama boleh menyebabkan komputer tidak stabil. Kami menyediakan servis format & reinstall Windows bersih berserta software asas."
                                  : "A corrupted or old operating system can cause instability. We provide clean format & reinstall Windows with basic software." },
-                { keywords: ["panas", "habuk", "kipas", "thermal paste", "cuci", "vacuum", "bising", "padam sendiri", "shutdown"], category: "maintenance", 
-                  advice: isMs ? "Komputer yang terlampau panas (overheating) biasanya berpunca daripada habuk yang tersumbat di kipas dan thermal paste yang telah kering. Kami menawarkan servis cuci dalaman & tukar thermal paste premium." 
+                { keywords: ["panas", "habuk", "kipas", "thermal paste", "cuci", "vacuum", "bising", "padam sendiri", "shutdown"], category: "maintenance",
+                  advice: isMs ? "Komputer yang terlampau panas (overheating) biasanya berpunca daripada habuk yang tersumbat di kipas dan thermal paste yang telah kering. Kami menawarkan servis cuci dalaman & tukar thermal paste premium."
                                  : "Overheating computers are usually caused by dust clogging the fan and dried thermal paste. We offer internal cleaning & premium thermal paste replacement." },
-                { keywords: ["skrin", "screen", "pecah", "crack", "display", "gelap", "blue screen", "bsod", "rosak", "repair", "baiki", "no power", "tidak boleh on", "motherboard", "keyboard"], category: "repair", 
-                  advice: isMs ? "Kami mahir mengendalikan pelbagai baik pulih hardware termasuk penukaran skrin pecah, keyboard rosak, masalah laptop tidak boleh ON, kerosakan motherboard, dan masalah komponen lain." 
+                { keywords: ["skrin", "screen", "pecah", "crack", "display", "gelap", "blue screen", "bsod", "rosak", "repair", "baiki", "no power", "tidak boleh on", "motherboard", "keyboard"], category: "repair",
+                  advice: isMs ? "Kami mahir mengendalikan pelbagai baik pulih hardware termasuk penukaran skrin pecah, keyboard rosak, masalah laptop tidak boleh ON, kerosakan motherboard, dan masalah komponen lain."
                                  : "We are skilled in various hardware repairs including broken screen replacement, faulty keyboard, laptop not powering on, motherboard damage, and other component issues." },
-                { keywords: ["printer", "cetak", "print", "dakwat", "ink", "paper jam"], category: "printer", 
-                  advice: isMs ? "Kami menyediakan servis baik pulih printer serta konsultasi penyelenggaraan bagi printer jenis inkjet mahupun laserjet." 
+                { keywords: ["printer", "cetak", "print", "dakwat", "ink", "paper jam"], category: "printer",
+                  advice: isMs ? "Kami menyediakan servis baik pulih printer serta konsultasi penyelenggaraan bagi printer jenis inkjet mahupun laserjet."
                                  : "We provide printer repair services and maintenance consultations for both inkjet and laserjet printers." },
-                { keywords: ["virus", "malware", "adware", "data hilang", "backup", "transfer", "pindah data", "software", "office"], category: "data_software", 
-                  advice: isMs ? "Lindungi data anda daripada serangan ransomware/virus. Kami menyediakan servis membersihkan virus, backup data, pemindahan data ke peranti baru, dan pemasangan perisian penting." 
+                { keywords: ["virus", "malware", "adware", "data hilang", "backup", "transfer", "pindah data", "software", "office"], category: "data_software",
+                  advice: isMs ? "Lindungi data anda daripada serangan ransomware/virus. Kami menyediakan servis membersihkan virus, backup data, pemindahan data ke peranti baru, dan pemasangan perisian penting."
                                  : "Protect your data from ransomware/virus attacks. We provide virus cleaning, data backup, data transfer to new devices, and essential software installation." },
-                { keywords: ["wifi", "router", "internet", "lan", "network", "kabel", "unifi"], category: "networking", 
-                  advice: isMs ? "Kami menawarkan khidmat pemasangan rangkaian (networking), troubleshoot router, pemasangan WiFi di kediaman serta pejabat kecil." 
+                { keywords: ["wifi", "router", "internet", "lan", "network", "kabel", "unifi"], category: "networking",
+                  advice: isMs ? "Kami menawarkan khidmat pemasangan rangkaian (networking), troubleshoot router, pemasangan WiFi di kediaman serta pejabat kecil."
                                  : "We offer network installation services, router troubleshooting, WiFi setup for homes and small offices." },
-                { keywords: ["beli", "harga", "laptop baru", "second", "refurbished", "terpakai", "aksesori", "mouse", "keyboard"], category: "jualan", 
-                  advice: isMs ? "Kami ada menjual pelbagai pilihan laptop baru, laptop terpakai berkualiti (refurbished), komputer desktop, dan aksesori gajet pada harga yang sangat berpatutan." 
+                { keywords: ["beli", "harga", "laptop baru", "second", "refurbished", "terpakai", "aksesori", "mouse", "keyboard"], category: "jualan",
+                  advice: isMs ? "Kami ada menjual pelbagai pilihan laptop baru, laptop terpakai berkualiti (refurbished), komputer desktop, dan aksesori gajet pada harga yang sangat berpatutan."
                                  : "We sell a variety of new laptops, quality used (refurbished) laptops, desktop computers, and gadget accessories at very reasonable prices." }
             ];
         }
 
-        // Mesej alu-aluan (dwibahasa)
+        // ------ MESEJ ALU-ALUAN (dengan iframe peta) ------
+        const mapIframeHTML = `<div class="w-full h-48 mt-2">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7567.739544985522!2d103.158861!3d5.313232600000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31b7bfe6ec163b95%3A0xd139f102e1b80bda!2sSynotech%20-%20Kedai%20Jual%20dan%20Baiki%20Laptop%20Komputer%20Kuala%20Terengganu!5e1!3m2!1sen!2smy!4v1781289487537!5m2!1sen!2smy" 
+                class="map-iframe" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>`;
+
         function getIntroMessages(lang) {
             const isMs = (lang === 'ms');
+            const mapBlock = mapIframeHTML;
             if (isMs) {
                 return [
                     `Selamat datang ke <strong>Synotech Computer Sales and Services</strong>! 🛠️ <br><br>
                     Kami sedia membantu membaiki laptop, komputer desktop, upgrade, servis printer dan membekalkan aksesori berkualiti.
                     <br><br>
                     📍 Lokasi kami di Pantai Batu Buruk, Kuala Terengganu.<br>
-                    <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">Lihat di Google Maps</a>
-                    <br><br>
-                    Sila pilih kategori masalah anda di bawah atau taip masalah anda terus dalam ruangan sembang.`,
+                    ${mapBlock}
+                    <br>Sila pilih kategori masalah anda di bawah atau taip masalah anda terus dalam ruangan sembang.`,
 
                     `Hai! 👋 Terima kasih singgah ke <strong>Synotech Computer Sales and Services</strong>.<br><br>
                     Kami pakar dalam baik pulih komputer, laptop, servis pencetak, dan naik taraf sistem. Jangan ragu untuk bertanya!
                     <br><br>
-                    🗺️ Kami terletak di Pantai Batu Buruk, Kuala Terengganu — <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">klik sini untuk peta</a>.
-                    <br><br>
-                    Gunakan menu di bawah atau taip masalah anda secara terus.`,
+                    🗺️ Kami terletak di Pantai Batu Buruk, Kuala Terengganu —
+                    ${mapBlock}
+                    <br>Gunakan menu di bawah atau taip masalah anda secara terus.`,
 
                     `Apa khabar! Selamat datang ke kedai kami – <strong>Synotech Computer Sales and Services</strong>.<br><br>
                     Dari baiki laptop rosak, masalah overheating, hingga pasang WiFi pejabat, kami sedia bantu.
                     <br><br>
-                    📍 Cari kami di Pantai Batu Buruk, Kuala Terengganu. <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">Google Maps</a>
-                    <br><br>
-                    Pilih perkhidmatan yang anda perlukan di bawah.`,
+                    📍 Cari kami di Pantai Batu Buruk, Kuala Terengganu.
+                    ${mapBlock}
+                    <br>Pilih perkhidmatan yang anda perlukan di bawah.`,
 
                     `Hai, terima kasih hubungi Synotech! 👨‍💻<br><br>
                     Anda kini berhubung dengan <strong>Synotech Computer Sales and Services</strong>, pakar komputer di Kuala Terengganu.
                     <br><br>
-                    📍 Lokasi kami di Pantai Batu Buruk — <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">Lihat peta</a>.
-                    <br><br>
-                    Ceritakan masalah komputer anda atau pilih kategori di bawah.`,
+                    📍 Lokasi kami di Pantai Batu Buruk —
+                    ${mapBlock}
+                    <br>Ceritakan masalah komputer anda atau pilih kategori di bawah.`,
 
                     `Salam sejahtera! 🤝<br><br>
                     <strong>Synotech Computer Sales and Services</strong> mengalu-alukan anda. Kami menyediakan servis repair, upgrade, cuci habuk, jualan laptop, dan banyak lagi.
                     <br><br>
-                    🗺️ Datang terus ke kedai kami di Pantai Batu Buruk, Kuala Terengganu (<a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">peta</a>).
-                    <br><br>
-                    Untuk mula, sila pilih kategori di bawah atau taip kerosakan anda.`
+                    🗺️ Datang terus ke kedai kami di Pantai Batu Buruk, Kuala Terengganu
+                    ${mapBlock}
+                    <br>Untuk mula, sila pilih kategori di bawah atau taip kerosakan anda.`
                 ];
             } else {
                 return [
@@ -245,42 +256,41 @@
                     We are ready to help with laptop repairs, desktop computers, upgrades, printer services, and quality accessories.
                     <br><br>
                     📍 Our location: Pantai Batu Buruk, Kuala Terengganu.<br>
-                    <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">View on Google Maps</a>
-                    <br><br>
-                    Please select your problem category below or type your issue directly in the chat.`,
+                    ${mapBlock}
+                    <br>Please select your problem category below or type your issue directly in the chat.`,
 
                     `Hi! 👋 Thanks for visiting <strong>Synotech Computer Sales and Services</strong>.<br><br>
                     We specialize in computer & laptop repair, printer servicing, and system upgrades. Don't hesitate to ask!
                     <br><br>
-                    🗺️ We are located at Pantai Batu Buruk, Kuala Terengganu — <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">click here for map</a>.
-                    <br><br>
-                    Use the menu below or type your problem directly.`,
+                    🗺️ We are located at Pantai Batu Buruk, Kuala Terengganu —
+                    ${mapBlock}
+                    <br>Use the menu below or type your problem directly.`,
 
                     `How are you! Welcome to our store – <strong>Synotech Computer Sales and Services</strong>.<br><br>
                     From fixing a broken laptop, overheating issues, to setting up office WiFi, we are here to help.
                     <br><br>
-                    📍 Find us at Pantai Batu Buruk, Kuala Terengganu. <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">Google Maps</a>
-                    <br><br>
-                    Choose the service you need below.`,
+                    📍 Find us at Pantai Batu Buruk, Kuala Terengganu.
+                    ${mapBlock}
+                    <br>Choose the service you need below.`,
 
                     `Hi, thanks for reaching out to Synotech! 👨‍💻<br><br>
                     You're now connected with <strong>Synotech Computer Sales and Services</strong>, computer experts in Kuala Terengganu.
                     <br><br>
-                    📍 Our location: Pantai Batu Buruk — <a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">View map</a>.
-                    <br><br>
-                    Tell us about your computer problem or select a category below.`,
+                    📍 Our location: Pantai Batu Buruk —
+                    ${mapBlock}
+                    <br>Tell us about your computer problem or select a category below.`,
 
                     `Greetings! 🤝<br><br>
                     <strong>Synotech Computer Sales and Services</strong> welcomes you. We provide repair, upgrade, dust cleaning, laptop sales, and much more.
                     <br><br>
-                    🗺️ Visit our store at Pantai Batu Buruk, Kuala Terengganu (<a href="https://maps.google.com/?cid=15076346222278609882" target="_blank" class="text-[#294582] underline font-medium">map</a>).
-                    <br><br>
-                    To start, please choose a category below or type your issue.`
+                    🗺️ Visit our store at Pantai Batu Buruk, Kuala Terengganu
+                    ${mapBlock}
+                    <br>To start, please choose a category below or type your issue.`
                 ];
             }
         }
 
-        // Teks antara muka lain (dwibahasa)
+        // ------ TEKS ANTARA MUKA (dwibahasa) ------
         function getUITexts(lang) {
             const isMs = (lang === 'ms');
             return {
@@ -292,62 +302,43 @@
                 userLabel: isMs ? "Anda" : "You",
                 inputPlaceholder: isMs ? "Taip kerosakan anda disini..." : "Type your issue here...",
                 serviceChosen: (name) => isMs ? `Saya berminat dengan: *${name}*` : `I'm interested in: *${name}*`,
-                rightChoice: (name) => isMs 
+                rightChoice: (name) => isMs
                     ? `Satu pilihan yang tepat! Kami sedia membantu anda untuk urusan <strong>${name}</strong> di Synotech Batu Buruk.<br><br>Untuk respon terpantas, hantarkan mesej tempahan/pertanyaan ini terus ke talian WhatsApp rasmi kami.<br><br>`
                     : `Great choice! We are ready to assist you with <strong>${name}</strong> at Synotech Batu Buruk.<br><br>For the fastest response, send this booking/inquiry directly to our official WhatsApp line.<br><br>`,
                 waBtn: isMs ? "Hubungi WhatsApp Synotech" : "Contact Synotech WhatsApp",
-                understandingMsg: (text, advice) => isMs 
+                understandingMsg: (text, advice) => isMs
                     ? `Saya faham masalah anda.<br><br>💡 <strong>Cadangan Synotech:</strong><br>${advice}<br><br>Sila klik butang di bawah untuk menghantar mesej rujukan masalah anda ("<em>${text}</em>") terus ke juruteknik kami di WhatsApp untuk semakan lanjut.`
                     : `I understand your problem.<br><br>💡 <strong>Synotech Suggestion:</strong><br>${advice}<br><br>Click the button below to send your issue reference ("<em>${text}</em>") directly to our technician on WhatsApp for further review.`,
                 waDiscussBtn: isMs ? "Bincang di WhatsApp Sekarang" : "Discuss on WhatsApp Now",
-                genericReply: (text) => isMs 
+                genericReply: (text) => isMs
                     ? `Terima kasih atas mesej anda.<br><br>Pertanyaan anda mengenai "<em>${text}</em>" sedia untuk dirujuk ke bahagian sokongan teknikal Synotech.<br><br>Sila klik butang di bawah untuk terus menghantar soalan ini secara langsung ke WhatsApp kami di <strong>+601174407112</strong>.`
                     : `Thank you for your message.<br><br>Your inquiry about "<em>${text}</em>" is ready to be forwarded to Synotech technical support.<br><br>Click the button below to send this question directly to our WhatsApp at <strong>+601174407112</strong>.`,
                 waContinueBtn: isMs ? "Teruskan ke WhatsApp" : "Continue to WhatsApp"
             };
         }
 
-        // Fungsi bantuan untuk mendapatkan teks antara muka
-        function UI() {
-            return getUITexts(currentLang);
-        }
+        function UI() { return getUITexts(currentLang); }
+        function serviceData() { return getServiceData(currentLang); }
+        function keywordDB() { return getKeywordDatabase(currentLang); }
 
-        // Fungsi untuk mendapatkan data perkhidmatan semasa
-        function serviceData() {
-            return getServiceData(currentLang);
-        }
-
-        function keywordDB() {
-            return getKeywordDatabase(currentLang);
-        }
-
-        // Bina WhatsApp URL (tetap guna bahasa pilihan)
         function createWhatsAppUrl(customText) {
             const baseUrl = "https://wa.me/" + WHATSAPP_NUMBER;
-            const prefix = currentLang === 'ms' ? "Hi Synotech Batu Buruk! Saya perlukan info mengenai servis ini:\n\n👉 *" : "Hi Synotech Batu Buruk! I need info about this service:\n\n👉 *";
-            const fullText = prefix + customText + "*";
-            return `${baseUrl}?text=${encodeURIComponent(fullText)}`;
+            const prefix = currentLang === 'ms'
+                ? "Hi Synotech Batu Buruk! Saya perlukan info mengenai servis ini:\n\n👉 *"
+                : "Hi Synotech Batu Buruk! I need info about this service:\n\n👉 *";
+            return `${baseUrl}?text=${encodeURIComponent(prefix + customText + "*")}`;
         }
 
-        // Fungsi togol bahasa
         function toggleLanguage() {
             currentLang = (currentLang === 'ms') ? 'en' : 'ms';
-            // Kemas kini butang bahasa
-            if (currentLang === 'ms') {
-                langIcon.textContent = '🇲🇾';
-                langText.textContent = 'BM';
-            } else {
-                langIcon.textContent = '🇬🇧';
-                langText.textContent = 'EN';
-            }
-            // Kosongkan sejarah sembang dan mula semula
+            langIcon.textContent = currentLang === 'ms' ? '🇲🇾' : '🇬🇧';
+            langText.textContent = currentLang === 'ms' ? 'BM' : 'EN';
             chatHistory.innerHTML = '';
             initBot();
         }
 
-        // ========== FUNGSI UTAMA ==========
+        // ========== LOGIK UTAMA ==========
         function initBot() {
-            // Papar mesej alu-aluan rawak
             const intros = getIntroMessages(currentLang);
             const randomIndex = Math.floor(Math.random() * intros.length);
             appendMessage('bot', intros[randomIndex], true);
@@ -437,9 +428,7 @@
                 const waUrl = createWhatsAppUrl(msg);
                 const botResponse = ui.rightChoice(serviceName) + `
                     <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-2 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
-                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
-                        </svg>
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                         ${ui.waBtn}
                     </a>
                 `;
@@ -483,9 +472,7 @@
                 if (matchedCategory) {
                     const botResponse = ui.understandingMsg(text, matchedAdvice) + `
                         <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
-                            </svg>
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                             ${ui.waDiscussBtn}
                         </a>
                     `;
@@ -494,9 +481,7 @@
                 } else {
                     const botResponse = ui.genericReply(text) + `
                         <a href="${waUrl}" target="_blank" class="pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
-                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413" />
-                            </svg>
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                             ${ui.waContinueBtn}
                         </a>
                     `;
@@ -506,9 +491,8 @@
             }, 600);
         }
 
-        // Mulakan bot apabila halaman dimuatkan
+        // Mula
         window.onload = () => {
-            // Pastikan butang togol bahasa memaparkan bahasa asal (ms)
             langIcon.textContent = '🇲🇾';
             langText.textContent = 'BM';
             initBot();
