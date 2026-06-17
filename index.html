@@ -127,12 +127,23 @@
       animation: wa-pulse-soft 1.8s infinite;
     }
 
-    /* avatar */
+    /* avatar – no circle mask, just clean image */
     .bot-avatar-img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      object-position: center 20%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* avatar container – square, no border-radius mask */
+    .bot-avatar-wrapper {
+      width: 2.5rem;
+      height: 2.5rem;
+      flex-shrink: 0;
+      overflow: visible;
+      background: transparent;
+      border: none;
+      box-shadow: none;
     }
 
     /* map iframe */
@@ -641,7 +652,7 @@
     }
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  APPEND MESSAGE (glass bubbles)
+    //  APPEND MESSAGE (glass bubbles – avatar without circle mask)
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     function appendMessage(sender, text, isHtml = false) {
       const bubble = document.createElement('div');
@@ -652,8 +663,8 @@
 
       if (sender === 'bot') {
         bubble.innerHTML = `
-            <div class="w-8 h-8 rounded-full bg-white/70 overflow-hidden shrink-0 shadow-sm border border-white/60">
-              <img src="https://hitpay-production.s3.ap-southeast-1.amazonaws.com/logos/owl-torso-top-6a32cb486bc39.png" 
+            <div class="bot-avatar-wrapper">
+              <img src="https://hitpay-production.s3.ap-southeast-1.amazonaws.com/logos/logo-head-mascoitt-6a32cef515c52.png" 
                    alt="Syno" class="bot-avatar-img">
             </div>
             <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 rounded-2xl rounded-tl-none glass-bubble-bot">
