@@ -3,68 +3,119 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Synotech Chatbot — Light Mode</title>
+    <title>Synotech Chatbot · Glass Light</title>
     <script src="https://cdn.tailwindcss.com">
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-        /* ── Reset & Base ── */
+        /* reset & base */
         * {
             box-sizing: border-box;
         }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #f9fafb;
+            background: #ffffff;
+            /* strict white base */
         }
 
-        /* ── Scrollbar (Light) ── */
+        /* subtle gradient decoration to make glass pop, while keeping bg white */
+        .bg-soft-glow {
+            background: radial-gradient(circle at 10% 20%, rgba(219, 234, 254, 0.4) 0%, rgba(255, 255, 255, 0.9) 90%);
+        }
+
+        /* scrollbar (light) */
         ::-webkit-scrollbar {
-            width: 5px;
+            width: 4px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.03);
+            background: rgba(0, 0, 0, 0.02);
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.12);
-            border-radius: 10px;
+            background: rgba(148, 163, 184, 0.4);
+            border-radius: 20px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(148, 163, 184, 0.6);
         }
 
-        /* ── Pulse / Glow (Light) ── */
-        @keyframes pulse-border-light {
-            0%,
-            100% {
-                border-color: rgba(59, 130, 246, 0.25);
-            }
-            50% {
-                border-color: rgba(59, 130, 246, 0.55);
-            }
-        }
-        .pulse-btn {
-            animation: pulse-border-light 2s infinite;
+        /* glassmorphism helpers */
+        .glass-bubble-bot {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.04), 0 2px 6px -2px rgba(0, 0, 0, 0.02);
         }
 
-        @keyframes pulse-glow-light {
+        .glass-bubble-user {
+            background: rgba(219, 234, 254, 0.70);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 24px -6px rgba(59, 130, 246, 0.08), 0 2px 6px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.06);
+        }
+
+        .glass-input-area {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(226, 232, 240, 0.5);
+        }
+
+        .glass-option-btn {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+        .glass-option-btn:hover {
+            background: rgba(241, 245, 249, 0.8);
+            border-color: rgba(148, 163, 184, 0.3);
+            transform: scale(0.98);
+        }
+
+        .glass-toggle-btn {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+        .glass-toggle-btn:hover {
+            background: rgba(241, 245, 249, 0.7);
+        }
+
+        /* pulse animation for toggle (soft) */
+        @keyframes pulse-ring-soft {
             0% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.25);
+                box-shadow: 0 0 0 0 rgba(148, 163, 184, 0.2);
             }
             70% {
-                box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+                box-shadow: 0 0 0 10px rgba(148, 163, 184, 0);
             }
             100% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+                box-shadow: 0 0 0 0 rgba(148, 163, 184, 0);
             }
         }
         #options-toggle-btn {
-            animation: pulse-glow-light 2.2s infinite;
-            transition: all 0.2s ease;
+            animation: pulse-ring-soft 2.4s infinite;
         }
 
-        @keyframes wa-pulse-light {
+        /* wa pulse */
+        @keyframes wa-pulse-soft {
             0% {
-                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4);
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.3);
             }
             70% {
                 box-shadow: 0 0 0 12px rgba(37, 211, 102, 0);
@@ -74,10 +125,10 @@
             }
         }
         .wa-pulse {
-            animation: wa-pulse-light 1.6s infinite;
+            animation: wa-pulse-soft 1.8s infinite;
         }
 
-        /* ── Avatar ── */
+        /* avatar */
         .bot-avatar-img {
             width: 100%;
             height: 100%;
@@ -85,11 +136,21 @@
             object-position: center 20%;
         }
 
-        /* ── Options Container Transition ── */
+        /* map iframe */
+        .map-iframe {
+            width: 100%;
+            height: 180px;
+            border: 0;
+            border-radius: 16px;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        /* options container transition */
         #options-container {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.4s ease, margin-bottom 0.3s ease;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.3s ease;
             margin-bottom: 0;
         }
         #options-container.expanded {
@@ -97,16 +158,18 @@
             margin-bottom: 12px;
         }
 
-        /* ── Map Iframe ── */
-        .map-iframe {
-            width: 100%;
-            height: 180px;
-            border: 0;
-            border-radius: 12px;
-            margin-top: 8px;
+        /* chat area background */
+        .chat-area-bg {
+            background-color: #f9fafb;
         }
 
-        /* ── Language Toggle ── */
+        /* input focus */
+        #user-input:focus {
+            border-color: #94a3b8;
+            ring-color: #94a3b8;
+        }
+
+        /* lang toggle */
         .lang-btn {
             transition: all 0.2s ease;
             font-weight: 600;
@@ -114,57 +177,55 @@
         }
         .lang-btn:hover {
             transform: scale(1.05);
-        }
-
-        /* ── Input Focus ── */
-        #user-input:focus {
-            border-color: #3b82f6;
-            ring-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.9);
         }
     </style>
 </head>
-<body class="h-screen w-full flex items-center justify-center p-0 m-0 overflow-hidden bg-[#f9fafb]">
+<body class="h-screen w-full flex items-center justify-center p-0 m-0 overflow-hidden bg-white">
 
-    <!-- ─── MAIN CONTAINER ─── -->
-    <div class="w-full h-full flex flex-col justify-between bg-white shadow-xl relative overflow-hidden">
+    <!-- subtle background glow (keeps bg white, adds depth for glass) -->
+    <div class="absolute inset-0 pointer-events-none bg-soft-glow"></div>
 
-        <!-- Decorative blobs (very subtle) -->
-        <div class="absolute -top-16 -left-16 w-56 h-56 bg-gray-200/30 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-16 -right-16 w-56 h-56 bg-gray-200/30 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- ─── MAIN GLASS CARD ─── -->
+    <div class="relative w-full h-full flex flex-col justify-between glass-panel shadow-2xl overflow-hidden">
+
+        <!-- decorative blur (optional) -->
+        <div class="absolute -top-20 -left-20 w-64 h-64 bg-blue-100/30 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-100/20 rounded-full blur-3xl pointer-events-none"></div>
 
         <!-- ─── LANGUAGE TOGGLE ─── -->
-        <button id="langToggle" class="absolute top-3 right-3 z-20 bg-white border border-gray-200/80 text-gray-700 shadow-sm rounded-full py-1.5 px-3 lang-btn flex items-center gap-1.5" onclick="toggleLanguage()">
+        <button id="langToggle" class="absolute top-3 right-3 z-20 bg-white/70 backdrop-blur-sm border border-white/60 text-slate-600 shadow-sm rounded-full py-1.5 px-3 lang-btn flex items-center gap-1.5" onclick="toggleLanguage()">
             <span id="langIcon">🇲🇾</span>
             <span id="langText" class="font-semibold text-[11px]">BM</span>
         </button>
 
-        <!-- ─── CHAT HISTORY ─── -->
-        <div id="chat-history" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 relative z-10 bg-[#f9fafb]"></div>
+        <!-- ─── CHAT HISTORY (bg #f9fafb) ─── -->
+        <div id="chat-history" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 relative z-10 chat-area-bg"></div>
 
-        <!-- ─── BOTTOM PANEL ─── -->
-        <div class="bg-white border-t border-gray-200/80 p-3 relative z-10 shadow-sm">
+        <!-- ─── BOTTOM PANEL (glass) ─── -->
+        <div class="glass-input-area p-3 relative z-10">
 
-            <!-- Toggle Options Button -->
-            <button id="options-toggle-btn" class="w-full mb-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gray-100 border border-gray-200 text-gray-700 text-xs font-bold hover:bg-gray-200 transition-colors" onclick="toggleOptions()">
+            <!-- toggle options button (glass) -->
+            <button id="options-toggle-btn" class="w-full mb-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl glass-toggle-btn text-slate-700 text-xs font-bold" onclick="toggleOptions()">
                 <span id="options-toggle-icon">⚡</span>
                 <span id="options-toggle-text">Pilihan Pintar</span>
             </button>
 
-            <!-- Options Menu -->
-            <div id="options-container">
+            <!-- options menu (glass) -->
+            <div id="options-container" class="bg-white/60 backdrop-blur-sm rounded-xl p-2 border border-white/40 shadow-sm">
                 <div class="flex justify-between items-center mb-1.5 px-1">
-                    <span id="options-label" class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">💡 Pilihan Pintar</span>
-                    <span id="current-menu" class="text-gray-600 text-[9px] bg-gray-100 px-1.5 py-0.5 rounded">Utama</span>
+                    <span id="options-label" class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">💡 Pilihan Pintar</span>
+                    <span id="current-menu" class="text-slate-500 text-[9px] bg-white/60 px-1.5 py-0.5 rounded border border-white/40">Utama</span>
                 </div>
                 <div id="options-buttons" class="flex flex-wrap gap-1.5"></div>
             </div>
 
-            <!-- Input Form -->
-            <form id="chat-form" onsubmit="handleFormSubmit(event)" class="flex items-center gap-2">
+            <!-- input form -->
+            <form id="chat-form" onsubmit="handleFormSubmit(event)" class="flex items-center gap-2 mt-1">
                 <div class="relative flex-1">
                     <input type="text" id="user-input" placeholder="Taip kerosakan anda disini…"
-                    class="w-full pl-4 pr-10 py-3 text-xs rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-gray-50 text-gray-700 placeholder:text-gray-400 transition-all duration-200" />
-                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 hover:text-blue-800 transition-colors p-1" aria-label="Hantar">
+                    class="w-full pl-4 pr-10 py-3 text-xs rounded-xl border border-slate-200/60 focus:border-slate-400 focus:ring-2 focus:ring-slate-300/40 outline-none bg-white/90 backdrop-blur-sm text-slate-700 placeholder:text-slate-400 shadow-inner transition-all duration-200" />
+                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1" aria-label="Hantar">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                         </svg>
@@ -201,14 +262,14 @@
             const isMs = (lang === 'ms');
             return {
                 main: [
-                    { id: "repair", label: isMs ? "🛠️ Repair & Diagnostik" : "🛠️ Repair & Diagnostics", icon: "🔧" },
-                    { id: "upgrade", label: isMs ? "⚡ Upgrade & Windows" : "⚡ Upgrade & Windows", icon: "🚀" },
-                    { id: "maintenance", label: isMs ? "🧹 Cuci & Servis Habuk" : "🧹 Cleaning & Maintenance", icon: "🧼" },
-                    { id: "data_software", label: isMs ? "💾 Data & Software" : "💾 Data & Software", icon: "📀" },
-                    { id: "networking", label: isMs ? "🌐 Network & WiFi Support" : "🌐 Network & WiFi Support", icon: "📶" },
-                    { id: "printer", label: isMs ? "🖨️ Printer Services" : "🖨️ Printer Services", icon: "🖨️" },
-                    { id: "jualan", label: isMs ? "💻 Jualan Laptop/PC" : "💻 Sales & Devices", icon: "🛒" },
-                    { id: "advice", label: isMs ? "📋 Pemeriksaan & Nasihat" : "📋 Consultation & Advice", icon: "💬" }
+                    { id: "repair", label: isMs ? "🛠️ Repair & Diagnostik" : "🛠️ Repair & Diagnostics" },
+                    { id: "upgrade", label: isMs ? "⚡ Upgrade & Windows" : "⚡ Upgrade & Windows" },
+                    { id: "maintenance", label: isMs ? "🧹 Cuci & Servis Habuk" : "🧹 Cleaning & Maintenance" },
+                    { id: "data_software", label: isMs ? "💾 Data & Software" : "💾 Data & Software" },
+                    { id: "networking", label: isMs ? "🌐 Network & WiFi Support" : "🌐 Network & WiFi Support" },
+                    { id: "printer", label: isMs ? "🖨️ Printer Services" : "🖨️ Printer Services" },
+                    { id: "jualan", label: isMs ? "💻 Jualan Laptop/PC" : "💻 Sales & Devices" },
+                    { id: "advice", label: isMs ? "📋 Pemeriksaan & Nasihat" : "📋 Consultation & Advice" }
                 ],
                 repair: {
                     title: isMs ? "Baik Pulih & Diagnostik" : "Repair & Diagnostics",
@@ -567,7 +628,7 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  APPEND MESSAGE
+        //  APPEND MESSAGE (glassmorphism bubbles)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function appendMessage(sender, text, isHtml = false) {
             const bubble = document.createElement('div');
@@ -578,22 +639,22 @@
 
             if (sender === 'bot') {
                 bubble.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-gray-100 overflow-hidden shrink-0 shadow-sm border border-gray-200">
+                    <div class="w-8 h-8 rounded-full bg-white/70 overflow-hidden shrink-0 shadow-sm border border-white/60">
                         <img src="https://hitpay-production.s3.ap-southeast-1.amazonaws.com/logos/syno-owl1-6a2c51b8ddb2c.png" 
                              alt="Syno" class="bot-avatar-img">
                     </div>
-                    <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 bg-white rounded-2xl rounded-tl-none shadow-sm border border-gray-100">
-                        <p class="text-sm font-semibold text-gray-800 mb-1">${ui.assistantName}</p>
-                        <div class="text-xs text-gray-700 leading-relaxed">${isHtml ? text : text.replace(/\n/g, '<br>')}</div>
-                        <span class="text-[9px] text-gray-400 mt-2 text-right">${time}</span>
+                    <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 rounded-2xl rounded-tl-none glass-bubble-bot">
+                        <p class="text-sm font-semibold text-slate-700 mb-1">${ui.assistantName}</p>
+                        <div class="text-xs text-slate-700 leading-relaxed">${isHtml ? text : text.replace(/\n/g, '<br>')}</div>
+                        <span class="text-[9px] text-slate-400 mt-2 text-right">${time}</span>
                     </div>
                 `;
             } else {
                 bubble.innerHTML = `
-                    <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 bg-gray-100 text-gray-800 rounded-2xl rounded-tr-none shadow-sm border border-gray-200">
-                        <p class="text-sm font-semibold text-gray-700 mb-1">${ui.userLabel}</p>
-                        <p class="text-xs leading-relaxed">${text}</p>
-                        <span class="text-[9px] text-gray-400 mt-2 text-right">${time}</span>
+                    <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 rounded-2xl rounded-tr-none glass-bubble-user">
+                        <p class="text-sm font-semibold text-slate-700 mb-1">${ui.userLabel}</p>
+                        <p class="text-xs text-slate-700 leading-relaxed">${text}</p>
+                        <span class="text-[9px] text-slate-400/80 mt-2 text-right">${time}</span>
                     </div>
                 `;
             }
@@ -604,7 +665,7 @@
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  RENDER MAIN OPTIONS
+        //  RENDER MAIN OPTIONS (glass style)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function renderMainOptions() {
             const ui = UI();
@@ -616,7 +677,7 @@
             serviceData().main.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className =
-                    "bg-white hover:bg-gray-100 hover:text-gray-900 border border-gray-200 text-gray-700 rounded-xl transition-all duration-200 text-xs font-semibold py-2 px-3 shadow-sm flex items-center gap-1 active:scale-95";
+                    "glass-option-btn text-slate-700 rounded-xl text-xs font-semibold py-2 px-3 flex items-center gap-1 active:scale-95";
                 btn.innerHTML = opt.label;
                 btn.onclick = () => selectCategory(opt.id);
                 optionsButtons.appendChild(btn);
@@ -637,7 +698,7 @@
 
             const backBtn = document.createElement('button');
             backBtn.className =
-                "bg-gray-100 border border-gray-200 text-gray-600 hover:bg-gray-200 hover:text-gray-800 rounded-xl transition-all duration-200 text-xs font-bold py-2 px-3 shadow-sm active:scale-95";
+                "glass-option-btn text-rose-600 hover:text-rose-700 rounded-xl text-xs font-bold py-2 px-3 active:scale-95";
             backBtn.innerHTML = ui.backBtn;
             backBtn.onclick = renderMainOptions;
             optionsButtons.appendChild(backBtn);
@@ -645,7 +706,7 @@
             category.items.forEach(item => {
                 const btn = document.createElement('button');
                 btn.className =
-                    "bg-white hover:bg-gray-100 hover:text-gray-900 border border-gray-200 text-gray-700 rounded-xl transition-all duration-200 text-xs font-medium py-2 px-3 shadow-sm active:scale-95";
+                    "glass-option-btn text-slate-700 rounded-xl text-xs font-medium py-2 px-3 active:scale-95";
                 btn.innerText = item.name;
                 btn.onclick = () => selectServiceItem(item.name, item.msg);
                 optionsButtons.appendChild(btn);
@@ -663,7 +724,7 @@
             setTimeout(() => {
                 const waUrl = createWhatsAppUrl(msg);
                 const botResponse = ui.rightChoice(serviceName) + `
-                    <a href="${waUrl}" target="_blank" class="wa-pulse pulse-btn inline-flex items-center gap-2 justify-center w-full mt-2 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                    <a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-2 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                         <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                         ${ui.waBtn}
                     </a>
@@ -681,7 +742,7 @@
             optionsButtons.innerHTML = "";
             const resetBtn = document.createElement('button');
             resetBtn.className =
-                "bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition-all duration-200 text-xs font-bold py-2 px-4 shadow-sm active:scale-95";
+                "glass-option-btn text-slate-700 font-bold py-2 px-4 active:scale-95";
             resetBtn.innerHTML = ui.resetBtn;
             resetBtn.onclick = renderMainOptions;
             optionsButtons.appendChild(resetBtn);
@@ -716,7 +777,7 @@
                 const waUrl = createWhatsAppUrl(text);
                 if (matchedCategory) {
                     const botResponse = ui.understandingMsg(text, matchedAdvice) + `
-                        <a href="${waUrl}" target="_blank" class="wa-pulse pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                        <a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                             ${ui.waDiscussBtn}
                         </a>
@@ -725,7 +786,7 @@
                     selectCategory(matchedCategory);
                 } else {
                     const botResponse = ui.genericReply(text) + `
-                        <a href="${waUrl}" target="_blank" class="wa-pulse pulse-btn inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                        <a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                             <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                             ${ui.waContinueBtn}
                         </a>
