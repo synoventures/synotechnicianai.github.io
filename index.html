@@ -1,842 +1,871 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Synotech · Light Glass</title>
-  <script src="https://cdn.tailwindcss.com">
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    /* reset & base – pure white */
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #ffffff;
-      margin: 0;
-      padding: 0;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Synotech · Glass UI</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ─── RESET & BASE ─── */
+        * {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #eef2f9;
+            /* soft background for glass to pop */
+        }
 
-    /* scrollbar (light) */
-    ::-webkit-scrollbar {
-      width: 4px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.02);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.3);
-      border-radius: 20px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(148, 163, 184, 0.5);
-    }
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 20px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
+        }
 
-    /* glassmorphism bubbles – adjusted for white bg */
-    .glass-bubble-bot {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      border: 1px solid rgba(226, 232, 240, 0.6);
-      box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
-    }
+        /* ─── GLASS CORE ─── */
+        .glass {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(16px) saturate(1.2);
+            -webkit-backdrop-filter: blur(16px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 20, 60, 0.06), 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
 
-    .glass-bubble-user {
-      background: rgba(219, 234, 254, 0.75);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      box-shadow: 0 4px 16px -4px rgba(59, 130, 246, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
-    }
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.70);
+            backdrop-filter: blur(20px) saturate(1.3);
+            -webkit-backdrop-filter: blur(20px) saturate(1.3);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 12px 40px rgba(0, 20, 60, 0.08), 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
 
-    /* main card – glass, but bg white */
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.80);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.04);
-    }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.50);
+            backdrop-filter: blur(12px) saturate(1.2);
+            -webkit-backdrop-filter: blur(12px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
 
-    /* bottom input area glass */
-    .glass-input-area {
-      background: rgba(255, 255, 255, 0.80);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(226, 232, 240, 0.5);
-    }
+        /* ─── CHAT BUBBLES ─── */
+        .bubble-bot {
+            background: rgba(255, 255, 255, 0.70);
+            backdrop-filter: blur(12px) saturate(1.2);
+            -webkit-backdrop-filter: blur(12px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03), 0 1px 4px rgba(0, 0, 0, 0.02);
+        }
 
-    /* option buttons */
-    .glass-option-btn {
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      border: 1px solid rgba(226, 232, 240, 0.6);
-      box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.02);
-      transition: all 0.2s ease;
-    }
-    .glass-option-btn:hover {
-      background: rgba(241, 245, 249, 0.8);
-      border-color: rgba(148, 163, 184, 0.3);
-      transform: scale(0.97);
-    }
+        .bubble-user {
+            background: rgba(219, 234, 254, 0.65);
+            backdrop-filter: blur(12px) saturate(1.2);
+            -webkit-backdrop-filter: blur(12px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.06), 0 1px 4px rgba(0, 0, 0, 0.02);
+        }
 
-    .glass-toggle-btn {
-      background: rgba(255, 255, 255, 0.5);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      border: 1px solid rgba(226, 232, 240, 0.5);
-      box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.02);
-      transition: all 0.2s ease;
-    }
-    .glass-toggle-btn:hover {
-      background: rgba(241, 245, 249, 0.7);
-    }
+        /* ─── OPTIONS MENU ─── */
+        #options-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                margin-bottom 0.3s ease,
+                padding 0.3s ease,
+                border 0.3s ease,
+                opacity 0.3s ease;
+            margin-bottom: 0;
+            padding: 0 !important;
+            border: 0 solid transparent !important;
+            opacity: 0;
+            background: rgba(255, 255, 255, 0.30);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 14px;
+        }
+        #options-container.expanded {
+            max-height: 320px;
+            margin-bottom: 12px;
+            padding: 10px !important;
+            border-width: 1px !important;
+            border-color: rgba(255, 255, 255, 0.4) !important;
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.40);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
 
-    /* pulse ring for toggle */
-    @keyframes pulse-ring-soft {
-      0% {
-        box-shadow: 0 0 0 0 rgba(148, 163, 184, 0.15);
-      }
-      70% {
-        box-shadow: 0 0 0 10px rgba(148, 163, 184, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(148, 163, 184, 0);
-      }
-    }
-    #options-toggle-btn {
-      animation: pulse-ring-soft 2.4s infinite;
-    }
+        /* ─── BUTTONS ─── */
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(8px) saturate(1.1);
+            -webkit-backdrop-filter: blur(8px) saturate(1.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+        .glass-btn:hover {
+            background: rgba(255, 255, 255, 0.65);
+            border-color: rgba(255, 255, 255, 0.7);
+            transform: scale(0.97);
+        }
 
-    /* WA pulse */
-    @keyframes wa-pulse-soft {
-      0% {
-        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.25);
-      }
-      70% {
-        box-shadow: 0 0 0 12px rgba(37, 211, 102, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
-      }
-    }
-    .wa-pulse {
-      animation: wa-pulse-soft 1.8s infinite;
-    }
+        .glass-btn-primary {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(8px) saturate(1.1);
+            -webkit-backdrop-filter: blur(8px) saturate(1.1);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+        .glass-btn-primary:hover {
+            background: rgba(241, 245, 249, 0.75);
+            border-color: rgba(148, 163, 184, 0.3);
+            transform: scale(0.97);
+        }
 
-    /* avatar – no circle mask, just clean image */
-    .bot-avatar-img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-    }
+        /* ─── TOGGLE PULSE ─── */
+        @keyframes pulse-ring-soft {
+            0% {
+                box-shadow: 0 0 0 0 rgba(148, 163, 184, 0.15);
+            }
+            70% {
+                box-shadow: 0 0 0 12px rgba(148, 163, 184, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(148, 163, 184, 0);
+            }
+        }
+        #options-toggle-btn {
+            animation: pulse-ring-soft 2.4s infinite;
+        }
 
-    /* avatar container – square, no border-radius mask */
-    .bot-avatar-wrapper {
-      width: 2.5rem;
-      height: 2.5rem;
-      flex-shrink: 0;
-      overflow: visible;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-    }
+        /* ─── WHATSAPP PULSE ─── */
+        @keyframes wa-pulse-soft {
+            0% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.25);
+            }
+            70% {
+                box-shadow: 0 0 0 14px rgba(37, 211, 102, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+            }
+        }
+        .wa-pulse {
+            animation: wa-pulse-soft 1.8s infinite;
+        }
 
-    /* map iframe */
-    .map-iframe {
-      width: 100%;
-      height: 180px;
-      border: 0;
-      border-radius: 16px;
-      margin-top: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-    }
+        /* ─── AVATAR ─── */
+        .bot-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .bot-avatar-wrapper {
+            width: 2.5rem;
+            height: 2.5rem;
+            flex-shrink: 0;
+            overflow: visible;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
 
-    /* options container – hidden by default */
-    #options-container {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.3s ease, padding 0.3s ease, border 0.3s ease;
-      margin-bottom: 0;
-      padding: 0 !important;
-      border: 0 solid transparent !important;
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-    }
-    #options-container.expanded {
-      max-height: 300px;
-      margin-bottom: 12px;
-      padding: 8px !important;
-      border-width: 1px !important;
-      border-color: rgba(255, 255, 255, 0.4) !important;
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-    }
+        /* ─── MAP IFRAME ─── */
+        .map-iframe {
+            width: 100%;
+            height: 180px;
+            border: 0;
+            border-radius: 16px;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
 
-    /* chat area background – pure white */
-    .chat-area-bg {
-      background-color: #ffffff;
-    }
+        /* ─── CHAT AREA ─── */
+        .chat-area-bg {
+            background: rgba(249, 250, 251, 0.40);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
 
-    /* input focus */
-    #user-input:focus {
-      border-color: #94a3b8;
-      ring-color: #94a3b8;
-    }
+        /* ─── LANG TOGGLE ─── */
+        .lang-btn {
+            transition: all 0.2s ease;
+            font-weight: 600;
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.50);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .lang-btn:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.75);
+        }
 
-    /* lang toggle */
-    .lang-btn {
-      transition: all 0.2s ease;
-      font-weight: 600;
-      font-size: 11px;
-    }
-    .lang-btn:hover {
-      transform: scale(1.05);
-      background: rgba(255, 255, 255, 0.9);
-    }
-  </style>
+        /* ─── INPUT FOCUS ─── */
+        #user-input:focus {
+            border-color: #94a3b8;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.15);
+        }
+
+        /* ─── DECORATIVE GLOW ─── */
+        .bg-glow-1 {
+            background: radial-gradient(circle at 20% 30%, rgba(147, 197, 253, 0.25) 0%, transparent 60%);
+        }
+        .bg-glow-2 {
+            background: radial-gradient(circle at 80% 70%, rgba(165, 180, 252, 0.20) 0%, transparent 55%);
+        }
+    </style>
 </head>
-<body class="h-screen w-full flex items-center justify-center p-0 m-0 overflow-hidden bg-white">
+<body>
 
-  <!-- ─── MAIN GLASS CARD ─── -->
-  <div class="relative w-full h-full flex flex-col justify-between glass-panel shadow-2xl overflow-hidden">
+    <!-- ─── MAIN GLASS CARD ─── full viewport, no margins, no rounding -->
+    <div class="relative w-full h-full flex flex-col justify-between glass-strong shadow-2xl overflow-hidden">
 
-    <!-- optional subtle glow (keeps bg white) -->
-    <div class="absolute -top-20 -left-20 w-64 h-64 bg-blue-50/50 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-indigo-50/40 rounded-full blur-3xl pointer-events-none"></div>
+        <!-- decorative glows -->
+        <div class="absolute -top-24 -left-24 w-72 h-72 bg-glow-1 rounded-full blur-3xl pointer-events-none opacity-60"></div>
+        <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-glow-2 rounded-full blur-3xl pointer-events-none opacity-60"></div>
 
-    <!-- ─── LANGUAGE TOGGLE ─── -->
-    <button id="langToggle" class="absolute top-3 right-3 z-20 bg-white/80 backdrop-blur-sm border border-white/60 text-slate-600 shadow-sm rounded-full py-1.5 px-3 lang-btn flex items-center gap-1.5" onclick="toggleLanguage()">
-      <span id="langIcon">🇲🇾</span>
-      <span id="langText" class="font-semibold text-[11px]">BM</span>
-    </button>
+        <!-- ─── LANGUAGE TOGGLE ─── -->
+        <button id="langToggle" class="absolute top-3 right-3 z-20 text-slate-600 shadow-sm rounded-full py-1.5 px-3 lang-btn flex items-center gap-1.5" onclick="toggleLanguage()">
+            <span id="langIcon">🇲🇾</span>
+            <span id="langText" class="font-semibold text-[11px]">BM</span>
+        </button>
 
-    <!-- ─── CHAT HISTORY (pure white bg) ─── -->
-    <div id="chat-history" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 relative z-10 chat-area-bg"></div>
+        <!-- ─── CHAT HISTORY ─── -->
+        <div id="chat-history" class="flex-1 overflow-y-auto px-4 py-5 space-y-4 relative z-10 chat-area-bg"></div>
 
-    <!-- ─── BOTTOM PANEL (glass) ─── -->
-    <div class="glass-input-area p-3 relative z-10">
+        <!-- ─── BOTTOM PANEL ─── -->
+        <div class="glass-input p-3 relative z-10 border-t border-white/30">
 
-      <!-- toggle options button -->
-      <button id="options-toggle-btn" class="w-full mb-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl glass-toggle-btn text-slate-700 text-xs font-bold" onclick="toggleOptions()">
-        <span id="options-toggle-icon">⚡</span>
-        <span id="options-toggle-text">Pilihan Pintar</span>
-      </button>
+            <!-- toggle options button -->
+            <button id="options-toggle-btn" class="w-full mb-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl glass-btn text-slate-700 text-xs font-bold" onclick="toggleOptions()">
+                <span id="options-toggle-icon">⚡</span>
+                <span id="options-toggle-text">Pilihan Pintar</span>
+            </button>
 
-      <!-- options menu (glass) – hidden by default -->
-      <div id="options-container">
-        <div class="flex justify-between items-center mb-1.5 px-1">
-          <span id="options-label" class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">💡 Pilihan Pintar</span>
-          <span id="current-menu" class="text-slate-500 text-[9px] bg-white/60 px-1.5 py-0.5 rounded border border-white/40">Utama</span>
+            <!-- options menu -->
+            <div id="options-container">
+                <div class="flex justify-between items-center mb-1.5 px-1">
+                    <span id="options-label" class="text-[10px] uppercase tracking-wider text-slate-500/80 font-semibold">💡 Pilihan Pintar</span>
+                    <span id="current-menu" class="text-slate-500/80 text-[9px] bg-white/30 px-1.5 py-0.5 rounded border border-white/30">Utama</span>
+                </div>
+                <div id="options-buttons" class="flex flex-wrap gap-1.5"></div>
+            </div>
+
+            <!-- input form -->
+            <form id="chat-form" onsubmit="handleFormSubmit(event)" class="flex items-center gap-2 mt-1">
+                <div class="relative flex-1">
+                    <input type="text" id="user-input" placeholder="Taip kerosakan anda disini…"
+                    class="w-full pl-4 pr-10 py-3 text-xs rounded-xl glass-input text-slate-700 placeholder:text-slate-400 transition-all duration-200" />
+                    <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1" aria-label="Hantar">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
         </div>
-        <div id="options-buttons" class="flex flex-wrap gap-1.5"></div>
-      </div>
-
-      <!-- input form -->
-      <form id="chat-form" onsubmit="handleFormSubmit(event)" class="flex items-center gap-2 mt-1">
-        <div class="relative flex-1">
-          <input type="text" id="user-input" placeholder="Taip kerosakan anda disini…"
-          class="w-full pl-4 pr-10 py-3 text-xs rounded-xl border border-slate-200/60 focus:border-slate-400 focus:ring-2 focus:ring-slate-300/40 outline-none bg-white/90 backdrop-blur-sm text-slate-700 placeholder:text-slate-400 shadow-inner transition-all duration-200" />
-          <button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1" aria-label="Hantar">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-            </svg>
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
 
-  <script>
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  CONFIG
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    const WHATSAPP_NUMBER = "601174407112";
-    const chatHistory = document.getElementById('chat-history');
-    const optionsContainer = document.getElementById('options-container');
-    const optionsButtons = document.getElementById('options-buttons');
-    const currentMenuLabel = document.getElementById('current-menu');
-    const optionsLabel = document.getElementById('options-label');
-    const userInput = document.getElementById('user-input');
-    const langIcon = document.getElementById('langIcon');
-    const langText = document.getElementById('langText');
-    const optionsToggleIcon = document.getElementById('options-toggle-icon');
-    const optionsToggleText = document.getElementById('options-toggle-text');
+    <script>
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  CONFIG
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        const WHATSAPP_NUMBER = "601174407112";
+        const chatHistory = document.getElementById('chat-history');
+        const optionsContainer = document.getElementById('options-container');
+        const optionsButtons = document.getElementById('options-buttons');
+        const currentMenuLabel = document.getElementById('current-menu');
+        const optionsLabel = document.getElementById('options-label');
+        const userInput = document.getElementById('user-input');
+        const langIcon = document.getElementById('langIcon');
+        const langText = document.getElementById('langText');
+        const optionsToggleIcon = document.getElementById('options-toggle-icon');
+        const optionsToggleText = document.getElementById('options-toggle-text');
 
-    let currentLevel = "main";
-    let currentLang = "ms";
-    let optionsExpanded = false;
+        let currentLevel = "main";
+        let currentLang = "ms";
+        let optionsExpanded = false;
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  DATA PERKHIDMATAN (dwibahasa)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function getServiceData(lang) {
-      const isMs = (lang === 'ms');
-      return {
-        main: [
-          { id: "repair", label: isMs ? "🛠️ Repair & Diagnostik" : "🛠️ Repair & Diagnostics" },
-          { id: "upgrade", label: isMs ? "⚡ Upgrade & Windows" : "⚡ Upgrade & Windows" },
-          { id: "maintenance", label: isMs ? "🧹 Cuci & Servis Habuk" : "🧹 Cleaning & Maintenance" },
-          { id: "data_software", label: isMs ? "💾 Data & Software" : "💾 Data & Software" },
-          { id: "networking", label: isMs ? "🌐 Network & WiFi Support" : "🌐 Network & WiFi Support" },
-          { id: "printer", label: isMs ? "🖨️ Printer Services" : "🖨️ Printer Services" },
-          { id: "jualan", label: isMs ? "💻 Jualan Laptop/PC" : "💻 Sales & Devices" },
-          { id: "advice", label: isMs ? "📋 Pemeriksaan & Nasihat" : "📋 Consultation & Advice" }
-        ],
-        repair: {
-          title: isMs ? "Baik Pulih & Diagnostik" : "Repair & Diagnostics",
-          items: [
-            { name: isMs ? "Repair Laptop" : "Laptop Repair", msg: isMs ? "Saya mahu hantar laptop untuk dibaiki di kedai." :
-                "I want to send my laptop for repair at your shop." },
-            { name: isMs ? "Repair Komputer Desktop" : "Desktop PC Repair", msg: isMs ?
-                "Saya perlukan bantuan untuk baiki komputer desktop saya." :
-                "I need help repairing my desktop computer." },
-            { name: isMs ? "Diagnostik Kerosakan" : "Damage Diagnostics", msg: isMs ?
-                "Laptop/PC saya mengalami masalah dan saya mahu buat diagnostik penuh." :
-                "My laptop/PC has issues and I need a full diagnostic." },
-            { name: isMs ? "Repair Motherboard" : "Motherboard Repair", msg: isMs ?
-                "Motherboard laptop/PC saya disyaki rosak, mahu tahu sebut harga baiki." :
-                "My laptop/PC motherboard is suspected faulty, need a quote." },
-            { name: isMs ? "Laptop Tidak Boleh ON" : "Laptop Won't Power On", msg: isMs ?
-                "Laptop saya langsung tidak boleh dihidupkan (No Power)." :
-                "My laptop has no power, cannot turn on." },
-            { name: isMs ? "Masalah Overheating / Panas" : "Overheating Issues", msg: isMs ?
-                "Laptop/PC saya selalu padam sendiri sebab terlampau panas." :
-                "My laptop/PC keeps shutting down due to overheating." }
-          ]
-        },
-        upgrade: {
-          title: isMs ? "Upgrade & Prestasi" : "Upgrade & Performance",
-          items: [
-            { name: isMs ? "Upgrade SSD (Laju 10x)" : "Upgrade SSD (10x Faster)", msg: isMs ?
-                "Saya nak upgrade SSD untuk lajukan laptop/PC saya." :
-                "I want to upgrade to SSD to speed up my laptop/PC." },
-            { name: isMs ? "Upgrade RAM" : "Upgrade RAM", msg: isMs ? "Saya mahu tambah/upgrade RAM laptop/komputer saya." :
-                "I want to add/upgrade RAM for my laptop/computer." },
-            { name: isMs ? "Pemasangan Semula Windows" : "Windows Reinstallation", msg: isMs ?
-                "Saya ingin install semula / format Windows baharu." :
-                "I want to reinstall/format Windows fresh." },
-            { name: isMs ? "Format & Reinstall OS" : "Format & Reinstall OS", msg: isMs ?
-                "Komputer slow, saya nak format bersih semula seluruh sistem operasi." :
-                "My computer is slow, I want a clean format of the entire operating system." }
-          ]
-        },
-        maintenance: {
-          title: isMs ? "Servis Penyelenggaraan" : "Maintenance Services",
-          items: [
-            { name: isMs ? "Servis Pembersihan Laptop" : "Laptop Cleaning Service", msg: isMs ?
-                "Saya mahu hantar laptop untuk cuci habuk bahagian dalam." :
-                "I want to send my laptop for internal dust cleaning." },
-            { name: isMs ? "Tukar Thermal Paste" : "Thermal Paste Replacement", msg: isMs ?
-                "Saya nak tukar thermal paste baru untuk turunkan suhu CPU." :
-                "I want to replace the thermal paste to lower CPU temperature." },
-            { name: isMs ? "Servis Kipas (Fan Cleaning)" : "Fan Cleaning Service", msg: isMs ?
-                "Kipas laptop saya berbunyi bising / tidak berpusing lancar." :
-                "My laptop fan is noisy or not spinning smoothly." },
-            { name: isMs ? "Pemeriksaan Kesihatan Komputer" : "PC Health Check", msg: isMs ?
-                "Mahu buat general check-up kesihatan hard disk dan sistem komputer." :
-                "I want a general health check for hard disk and computer system." }
-          ]
-        },
-        data_software: {
-          title: isMs ? "Data & Perisian" : "Data & Software",
-          items: [
-            { name: isMs ? "Backup Data" : "Data Backup", msg: isMs ? "Saya mahu buat backup data penting saya sebelum hilang." :
-                "I want to backup my important data before it's lost." },
-            { name: isMs ? "Pemindahan Data (Transfer)" : "Data Transfer", msg: isMs ?
-                "Saya nak pindahkan semua data dari laptop lama ke laptop baru." :
-                "I want to transfer all data from old laptop to new laptop." },
-            { name: isMs ? "Pemasangan Software" : "Software Installation", msg: isMs ?
-                "Saya memerlukan bantuan pemasangan software / aplikasi pejabat." :
-                "I need help installing software / office applications." },
-            { name: isMs ? "Buang Virus & Malware" : "Virus & Malware Removal", msg: isMs ?
-                "Laptop saya kena virus, mahu buat pembersihan virus." :
-                "My laptop is infected with virus, I need virus cleaning." }
-          ]
-        },
-        networking: {
-          title: isMs ? "Networking & IT Support" : "Networking & IT Support",
-          items: [
-            { name: isMs ? "Setup Rangkaian (Networking)" : "Network Setup", msg: isMs ?
-                "Saya nak setup rangkaian kabel LAN/network di rumah atau pejabat." :
-                "I want to set up a LAN/network at home or office." },
-            { name: isMs ? "Konfigurasi Router & WiFi" : "Router & WiFi Configuration", msg: isMs ?
-                "Masalah router / WiFi tidak stabil, perlukan konfigurasi semula." :
-                "Router / WiFi unstable, needs reconfiguration." },
-            { name: isMs ? "IT Support Perniagaan" : "Business IT Support", msg: isMs ?
-                "Mahu berbincang tentang khidmat IT Support bulanan/ad-hoc untuk perniagaan kecil saya." :
-                "I want to discuss monthly/ad-hoc IT support for my small business." }
-          ]
-        },
-        printer: {
-          title: isMs ? "Printer Services" : "Printer Services",
-          items: [
-            { name: isMs ? "Servis / Repair Printer" : "Printer Repair", msg: isMs ?
-                "Printer saya ada masalah (paper jam / error / dakwat tidak keluar) dan perlu dibaiki." :
-                "My printer has issues (paper jam / error / ink not coming out) and needs repair." },
-            { name: isMs ? "Servis Percetakan" : "Printing Services", msg: isMs ? "Ada khidmat print dokumen/percetakan?" :
-                "Do you offer document printing services?" }
-          ]
-        },
-        jualan: {
-          title: isMs ? "Jualan Peranti & Aksesori" : "Sales & Accessories",
-          items: [
-            { name: isMs ? "Beli Laptop Baru" : "Buy New Laptop", msg: isMs ?
-                "Saya sedang mencari laptop baharu di Synotech Computer Kuala Terengganu." :
-                "I'm looking for a new laptop at Synotech Computer Kuala Terengganu." },
-            { name: isMs ? "Beli Laptop Refurbished / Terpakai" : "Buy Refurbished/Used Laptop", msg: isMs ?
-                "Saya berminat untuk melihat stok laptop terpakai bajet rendah." :
-                "I'm interested in low-budget used laptops." },
-            { name: isMs ? "Custom Desktop PC" : "Custom Desktop PC", msg: isMs ?
-                "Saya nak pasang / custom spec komputer desktop mengikut bajet saya." :
-                "I want to build/custom spec a desktop PC based on my budget." },
-            { name: isMs ? "Aksesori Komputer" : "Computer Accessories", msg: isMs ?
-                "Saya mencari aksesori tambahan (mouse, keyboard, kabel, adapter, dsb)." :
-                "I'm looking for extra accessories (mouse, keyboard, cables, adapters, etc)." }
-          ]
-        },
-        advice: {
-          title: isMs ? "Pemeriksaan & Nasihat" : "Consultation & Advice",
-          items: [
-            { name: isMs ? "Semakan Sebelum Beli Laptop" : "Pre-Purchase Laptop Check", msg: isMs ?
-                "Saya perlukan nasihat spec laptop mana yang paling sesuai sebelum membeli." :
-                "I need advice on which laptop spec suits me before buying." },
-            { name: isMs ? "Cadangan Spec Ikut Bajet" : "Spec Recommendation by Budget", msg: isMs ?
-                "Saya ada bajet tertentu, boleh bantu cadangkan spec terbaik?" :
-                "I have a certain budget, can you suggest the best spec?" },
-            { name: isMs ? "Konsultasi Repair vs Upgrade" : "Repair vs Upgrade Consultation", msg: isMs ?
-                "Saya runsing sama ada mahu repair komputer lama atau upgrade sahaja. Boleh beri nasihat?" :
-                "I'm torn between repairing my old computer or upgrading. Any advice?" }
-          ]
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  DATA PERKHIDMATAN (dwibahasa)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function getServiceData(lang) {
+            const isMs = (lang === 'ms');
+            return {
+                main: [
+                    { id: "repair", label: isMs ? "🛠️ Repair & Diagnostik" : "🛠️ Repair & Diagnostics" },
+                    { id: "upgrade", label: isMs ? "⚡ Upgrade & Windows" : "⚡ Upgrade & Windows" },
+                    { id: "maintenance", label: isMs ? "🧹 Cuci & Servis Habuk" : "🧹 Cleaning & Maintenance" },
+                    { id: "data_software", label: isMs ? "💾 Data & Software" : "💾 Data & Software" },
+                    { id: "networking", label: isMs ? "🌐 Network & WiFi Support" : "🌐 Network & WiFi Support" },
+                    { id: "printer", label: isMs ? "🖨️ Printer Services" : "🖨️ Printer Services" },
+                    { id: "jualan", label: isMs ? "💻 Jualan Laptop/PC" : "💻 Sales & Devices" },
+                    { id: "advice", label: isMs ? "📋 Pemeriksaan & Nasihat" : "📋 Consultation & Advice" }
+                ],
+                repair: {
+                    title: isMs ? "Baik Pulih & Diagnostik" : "Repair & Diagnostics",
+                    items: [
+                        { name: isMs ? "Repair Laptop" : "Laptop Repair", msg: isMs ? "Saya mahu hantar laptop untuk dibaiki di kedai." :
+                                "I want to send my laptop for repair at your shop." },
+                        { name: isMs ? "Repair Komputer Desktop" : "Desktop PC Repair", msg: isMs ?
+                                "Saya perlukan bantuan untuk baiki komputer desktop saya." :
+                                "I need help repairing my desktop computer." },
+                        { name: isMs ? "Diagnostik Kerosakan" : "Damage Diagnostics", msg: isMs ?
+                                "Laptop/PC saya mengalami masalah dan saya mahu buat diagnostik penuh." :
+                                "My laptop/PC has issues and I need a full diagnostic." },
+                        { name: isMs ? "Repair Motherboard" : "Motherboard Repair", msg: isMs ?
+                                "Motherboard laptop/PC saya disyaki rosak, mahu tahu sebut harga baiki." :
+                                "My laptop/PC motherboard is suspected faulty, need a quote." },
+                        { name: isMs ? "Laptop Tidak Boleh ON" : "Laptop Won't Power On", msg: isMs ?
+                                "Laptop saya langsung tidak boleh dihidupkan (No Power)." :
+                                "My laptop has no power, cannot turn on." },
+                        { name: isMs ? "Masalah Overheating / Panas" : "Overheating Issues", msg: isMs ?
+                                "Laptop/PC saya selalu padam sendiri sebab terlampau panas." :
+                                "My laptop/PC keeps shutting down due to overheating." }
+                    ]
+                },
+                upgrade: {
+                    title: isMs ? "Upgrade & Prestasi" : "Upgrade & Performance",
+                    items: [
+                        { name: isMs ? "Upgrade SSD (Laju 10x)" : "Upgrade SSD (10x Faster)", msg: isMs ?
+                                "Saya nak upgrade SSD untuk lajukan laptop/PC saya." :
+                                "I want to upgrade to SSD to speed up my laptop/PC." },
+                        { name: isMs ? "Upgrade RAM" : "Upgrade RAM", msg: isMs ? "Saya mahu tambah/upgrade RAM laptop/komputer saya." :
+                                "I want to add/upgrade RAM for my laptop/computer." },
+                        { name: isMs ? "Pemasangan Semula Windows" : "Windows Reinstallation", msg: isMs ?
+                                "Saya ingin install semula / format Windows baharu." :
+                                "I want to reinstall/format Windows fresh." },
+                        { name: isMs ? "Format & Reinstall OS" : "Format & Reinstall OS", msg: isMs ?
+                                "Komputer slow, saya nak format bersih semula seluruh sistem operasi." :
+                                "My computer is slow, I want a clean format of the entire operating system." }
+                    ]
+                },
+                maintenance: {
+                    title: isMs ? "Servis Penyelenggaraan" : "Maintenance Services",
+                    items: [
+                        { name: isMs ? "Servis Pembersihan Laptop" : "Laptop Cleaning Service", msg: isMs ?
+                                "Saya mahu hantar laptop untuk cuci habuk bahagian dalam." :
+                                "I want to send my laptop for internal dust cleaning." },
+                        { name: isMs ? "Tukar Thermal Paste" : "Thermal Paste Replacement", msg: isMs ?
+                                "Saya nak tukar thermal paste baru untuk turunkan suhu CPU." :
+                                "I want to replace the thermal paste to lower CPU temperature." },
+                        { name: isMs ? "Servis Kipas (Fan Cleaning)" : "Fan Cleaning Service", msg: isMs ?
+                                "Kipas laptop saya berbunyi bising / tidak berpusing lancar." :
+                                "My laptop fan is noisy or not spinning smoothly." },
+                        { name: isMs ? "Pemeriksaan Kesihatan Komputer" : "PC Health Check", msg: isMs ?
+                                "Mahu buat general check-up kesihatan hard disk dan sistem komputer." :
+                                "I want a general health check for hard disk and computer system." }
+                    ]
+                },
+                data_software: {
+                    title: isMs ? "Data & Perisian" : "Data & Software",
+                    items: [
+                        { name: isMs ? "Backup Data" : "Data Backup", msg: isMs ? "Saya mahu buat backup data penting saya sebelum hilang." :
+                                "I want to backup my important data before it's lost." },
+                        { name: isMs ? "Pemindahan Data (Transfer)" : "Data Transfer", msg: isMs ?
+                                "Saya nak pindahkan semua data dari laptop lama ke laptop baru." :
+                                "I want to transfer all data from old laptop to new laptop." },
+                        { name: isMs ? "Pemasangan Software" : "Software Installation", msg: isMs ?
+                                "Saya memerlukan bantuan pemasangan software / aplikasi pejabat." :
+                                "I need help installing software / office applications." },
+                        { name: isMs ? "Buang Virus & Malware" : "Virus & Malware Removal", msg: isMs ?
+                                "Laptop saya kena virus, mahu buat pembersihan virus." :
+                                "My laptop is infected with virus, I need virus cleaning." }
+                    ]
+                },
+                networking: {
+                    title: isMs ? "Networking & IT Support" : "Networking & IT Support",
+                    items: [
+                        { name: isMs ? "Setup Rangkaian (Networking)" : "Network Setup", msg: isMs ?
+                                "Saya nak setup rangkaian kabel LAN/network di rumah atau pejabat." :
+                                "I want to set up a LAN/network at home or office." },
+                        { name: isMs ? "Konfigurasi Router & WiFi" : "Router & WiFi Configuration", msg: isMs ?
+                                "Masalah router / WiFi tidak stabil, perlukan konfigurasi semula." :
+                                "Router / WiFi unstable, needs reconfiguration." },
+                        { name: isMs ? "IT Support Perniagaan" : "Business IT Support", msg: isMs ?
+                                "Mahu berbincang tentang khidmat IT Support bulanan/ad-hoc untuk perniagaan kecil saya." :
+                                "I want to discuss monthly/ad-hoc IT support for my small business." }
+                    ]
+                },
+                printer: {
+                    title: isMs ? "Printer Services" : "Printer Services",
+                    items: [
+                        { name: isMs ? "Servis / Repair Printer" : "Printer Repair", msg: isMs ?
+                                "Printer saya ada masalah (paper jam / error / dakwat tidak keluar) dan perlu dibaiki." :
+                                "My printer has issues (paper jam / error / ink not coming out) and needs repair." },
+                        { name: isMs ? "Servis Percetakan" : "Printing Services", msg: isMs ? "Ada khidmat print dokumen/percetakan?" :
+                                "Do you offer document printing services?" }
+                    ]
+                },
+                jualan: {
+                    title: isMs ? "Jualan Peranti & Aksesori" : "Sales & Accessories",
+                    items: [
+                        { name: isMs ? "Beli Laptop Baru" : "Buy New Laptop", msg: isMs ?
+                                "Saya sedang mencari laptop baharu di Synotech Computer Kuala Terengganu." :
+                                "I'm looking for a new laptop at Synotech Computer Kuala Terengganu." },
+                        { name: isMs ? "Beli Laptop Refurbished / Terpakai" : "Buy Refurbished/Used Laptop", msg: isMs ?
+                                "Saya berminat untuk melihat stok laptop terpakai bajet rendah." :
+                                "I'm interested in low-budget used laptops." },
+                        { name: isMs ? "Custom Desktop PC" : "Custom Desktop PC", msg: isMs ?
+                                "Saya nak pasang / custom spec komputer desktop mengikut bajet saya." :
+                                "I want to build/custom spec a desktop PC based on my budget." },
+                        { name: isMs ? "Aksesori Komputer" : "Computer Accessories", msg: isMs ?
+                                "Saya mencari aksesori tambahan (mouse, keyboard, kabel, adapter, dsb)." :
+                                "I'm looking for extra accessories (mouse, keyboard, cables, adapters, etc)." }
+                    ]
+                },
+                advice: {
+                    title: isMs ? "Pemeriksaan & Nasihat" : "Consultation & Advice",
+                    items: [
+                        { name: isMs ? "Semakan Sebelum Beli Laptop" : "Pre-Purchase Laptop Check", msg: isMs ?
+                                "Saya perlukan nasihat spec laptop mana yang paling sesuai sebelum membeli." :
+                                "I need advice on which laptop spec suits me before buying." },
+                        { name: isMs ? "Cadangan Spec Ikut Bajet" : "Spec Recommendation by Budget", msg: isMs ?
+                                "Saya ada bajet tertentu, boleh bantu cadangkan spec terbaik?" :
+                                "I have a certain budget, can you suggest the best spec?" },
+                        { name: isMs ? "Konsultasi Repair vs Upgrade" : "Repair vs Upgrade Consultation", msg: isMs ?
+                                "Saya runsing sama ada mahu repair komputer lama atau upgrade sahaja. Boleh beri nasihat?" :
+                                "I'm torn between repairing my old computer or upgrading. Any advice?" }
+                    ]
+                }
+            };
         }
-      };
-    }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  KATA KUNCI (dwibahasa)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function getKeywordDatabase(lang) {
-      const isMs = (lang === 'ms');
-      return [
-        { keywords: ["slow", "lembab", "laju", "ssd", "ram", "upgrade", "tambah", "pantas"], category: "upgrade",
-          advice: isMs ?
-            "Masalah komputer lembab biasanya berpunca daripada penggunaan hard disk lama (HDD) atau RAM yang tidak mencukupi. Kami amat menyarankan upgrade ke SSD dan tambah RAM untuk peningkatan kelajuan sehingga 10 kali ganda!" :
-            "Slow computer issues are usually caused by an old hard disk (HDD) or insufficient RAM. We highly recommend upgrading to SSD and adding more RAM for up to 10x speed improvement!" },
-        { keywords: ["format", "windows", "reinstall", "sistem", "os", "operating system"], category: "upgrade",
-          advice: isMs ?
-            "Sistem operasi yang korup atau sudah lama boleh menyebabkan komputer tidak stabil. Kami menyediakan servis format & reinstall Windows bersih berserta software asas." :
-            "A corrupted or old operating system can cause instability. We provide clean format & reinstall Windows with basic software." },
-        { keywords: ["panas", "habuk", "kipas", "thermal paste", "cuci", "vacuum", "bising", "padam sendiri",
-            "shutdown"
-          ], category: "maintenance",
-          advice: isMs ?
-            "Komputer yang terlampau panas (overheating) biasanya berpunca daripada habuk yang tersumbat di kipas dan thermal paste yang telah kering. Kami menawarkan servis cuci dalaman & tukar thermal paste premium." :
-            "Overheating computers are usually caused by dust clogging the fan and dried thermal paste. We offer internal cleaning & premium thermal paste replacement." },
-        { keywords: ["skrin", "screen", "pecah", "crack", "display", "gelap", "blue screen", "bsod", "rosak",
-            "repair", "baiki", "no power", "tidak boleh on", "motherboard", "keyboard"
-          ], category: "repair",
-          advice: isMs ?
-            "Kami mahir mengendalikan pelbagai baik pulih hardware termasuk penukaran skrin pecah, keyboard rosak, masalah laptop tidak boleh ON, kerosakan motherboard, dan masalah komponen lain." :
-            "We are skilled in various hardware repairs including broken screen replacement, faulty keyboard, laptop not powering on, motherboard damage, and other component issues." },
-        { keywords: ["printer", "cetak", "print", "dakwat", "ink", "paper jam"], category: "printer",
-          advice: isMs ?
-            "Kami menyediakan servis baik pulih printer serta konsultasi penyelenggaraan bagi printer jenis inkjet mahupun laserjet." :
-            "We provide printer repair services and maintenance consultations for both inkjet and laserjet printers." },
-        { keywords: ["virus", "malware", "adware", "data hilang", "backup", "transfer", "pindah data", "software",
-            "office"
-          ], category: "data_software",
-          advice: isMs ?
-            "Lindungi data anda daripada serangan ransomware/virus. Kami menyediakan servis membersihkan virus, backup data, pemindahan data ke peranti baru, dan pemasangan perisian penting." :
-            "Protect your data from ransomware/virus attacks. We provide virus cleaning, data backup, data transfer to new devices, and essential software installation." },
-        { keywords: ["wifi", "router", "internet", "lan", "network", "kabel", "unifi"], category: "networking",
-          advice: isMs ?
-            "Kami menawarkan khidmat pemasangan rangkaian (networking), troubleshoot router, pemasangan WiFi di kediaman serta pejabat kecil." :
-            "We offer network installation services, router troubleshooting, WiFi setup for homes and small offices." },
-        { keywords: ["beli", "harga", "laptop baru", "second", "refurbished", "terpakai", "aksesori", "mouse",
-            "keyboard"
-          ], category: "jualan",
-          advice: isMs ?
-            "Kami ada menjual pelbagai pilihan laptop baru, laptop terpakai berkualiti (refurbished), komputer desktop, dan aksesori gajet pada harga yang sangat berpatutan." :
-            "We sell a variety of new laptops, quality used (refurbished) laptops, desktop computers, and gadget accessories at very reasonable prices." }
-      ];
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  MESEJ ALU-ALUAN + PETA
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    const mapIframeHTML =
-      `<div class="w-full h-48 mt-2">
-          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7567.739544985522!2d103.158861!3d5.313232600000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31b7bfe6ec163b95%3A0xd139f102e1b80bda!2sSynotech%20-%20Kedai%20Jual%20dan%20Baiki%20Laptop%20Komputer%20Kuala%20Terengganu!5e1!3m2!1sen!2smy!4v1781289487537!5m2!1sen!2smy" 
-                  class="map-iframe" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-      </div>`;
-
-    function getIntroMessages(lang) {
-      const isMs = (lang === 'ms');
-      const mapBlock = mapIframeHTML;
-      if (isMs) {
-        return [
-          `Selamat datang ke <strong>Synotech Computer Kuala Terengganu</strong>! 🛠️ <br><br>
-              Kami sedia membantu membaiki laptop, komputer desktop, upgrade, servis printer dan membekalkan aksesori berkualiti.
-              <br><br>
-              📍 Lokasi kami di Pantai Batu Buruk, Kuala Terengganu.<br>
-              ${mapBlock}
-              <br>Gunakan butang <strong>⚡ Pilihan Pintar</strong> di bawah untuk memilih kategori.`,
-
-          `Hai! 👋 Terima kasih singgah ke <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
-              Kami pakar dalam baik pulih komputer, laptop, servis pencetak, dan naik taraf sistem.
-              <br><br>
-              🗺️ Pantai Batu Buruk, Kuala Terengganu —
-              ${mapBlock}
-              <br>Ketik <strong>⚡ Pilihan Pintar</strong> untuk mulakan.`,
-
-          `Apa khabar! Selamat datang ke kedai kami – <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
-              Dari baiki laptop rosak hingga pasang WiFi pejabat, kami sedia bantu.
-              <br><br>
-              📍 Pantai Batu Buruk, Kuala Terengganu.
-              ${mapBlock}
-              <br>Ketahui perkhidmatan kami melalui butang <strong>⚡ Pilihan Pintar</strong>.`,
-
-          `Hai, terima kasih hubungi Synotech! 👨‍💻<br><br>
-              Anda kini berhubung dengan <strong>Synotech Computer Kuala Terengganu</strong>, pakar komputer di Kuala Terengganu.
-              <br><br>
-              📍 Pantai Batu Buruk —
-              ${mapBlock}
-              <br>Pilih kategori masalah anda melalui <strong>⚡ Pilihan Pintar</strong>.`,
-
-          `Salam sejahtera! 🤝<br><br>
-              <strong>Synotech Computer Kuala Terengganu</strong> mengalu-alukan anda.
-              <br><br>
-              🗺️ Pantai Batu Buruk, Kuala Terengganu
-              ${mapBlock}
-              <br>Untuk bermula, ketik butang <strong>⚡ Pilihan Pintar</strong> di bawah.`
-        ];
-      } else {
-        return [
-          `Welcome to <strong>Synotech Computer Kuala Terengganu</strong>! 🛠️ <br><br>
-              We are ready to help with laptop repairs, desktop computers, upgrades, printer services, and quality accessories.
-              <br><br>
-              📍 Our location: Pantai Batu Buruk, Kuala Terengganu.<br>
-              ${mapBlock}
-              <br>Tap the <strong>⚡ Smart Options</strong> button below to choose a category.`,
-
-          `Hi! 👋 Thanks for visiting <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
-              We specialize in computer & laptop repair, printer servicing, and system upgrades.
-              <br><br>
-              🗺️ Pantai Batu Buruk, Kuala Terengganu —
-              ${mapBlock}
-              <br>Tap <strong>⚡ Smart Options</strong> to get started.`,
-
-          `Welcome to our store – <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
-              From fixing a broken laptop to setting up office WiFi, we are here to help.
-              <br><br>
-              📍 Pantai Batu Buruk, Kuala Terengganu.
-              ${mapBlock}
-              <br>Explore our services with the <strong>⚡ Smart Options</strong> button.`,
-
-          `Hi, thanks for reaching out to Synotech! 👨‍💻<br><br>
-              You're now connected with <strong>Synotech Computer Kuala Terengganu</strong>, computer experts in Kuala Terengganu.
-              <br><br>
-              📍 Pantai Batu Buruk —
-              ${mapBlock}
-              <br>Select your issue category via <strong>⚡ Smart Options</strong>.`,
-
-          `Greetings! 🤝<br><br>
-              <strong>Synotech Computer Kuala Terengganu</strong> welcomes you.
-              <br><br>
-              🗺️ Pantai Batu Buruk, Kuala Terengganu
-              ${mapBlock}
-              <br>To begin, tap the <strong>⚡ Smart Options</strong> button below.`
-        ];
-      }
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  TEKS ANTARA MUKA (dwibahasa)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function getUITexts(lang) {
-      const isMs = (lang === 'ms');
-      return {
-        assistantName: "Syno Assistant",
-        smartOptions: isMs ? "💡 Pilihan Pintar" : "💡 Smart Options",
-        mainMenu: isMs ? "Utama" : "Main",
-        backBtn: isMs ? "🔙 Menu Utama" : "🔙 Main Menu",
-        resetBtn: isMs ? "🔄 Tanya Mengenai Servis Lain" : "🔄 Ask About Another Service",
-        userLabel: isMs ? "Anda" : "You",
-        inputPlaceholder: isMs ? "Taip kerosakan anda disini…" : "Type your issue here…",
-        toggleBtnOpen: isMs ? "⚡ Pilihan Pintar" : "⚡ Smart Options",
-        toggleBtnClose: isMs ? "✖ Tutup Menu" : "✖ Close Menu",
-        serviceChosen: (name) => isMs ? `Saya berminat dengan: *${name}*` : `I'm interested in: *${name}*`,
-        rightChoice: (name) => isMs ?
-          `Satu pilihan yang tepat! Kami sedia membantu anda untuk urusan <strong>${name}</strong> di Synotech Computer Kuala Terengganu.<br><br>Untuk respon terpantas, hantarkan mesej tempahan/pertanyaan ini terus ke talian WhatsApp rasmi kami.<br><br>` :
-          `Great choice! We are ready to assist you with <strong>${name}</strong> at Synotech Computer Kuala Terengganu.<br><br>For the fastest response, send this booking/inquiry directly to our official WhatsApp line.<br><br>`,
-        waBtn: isMs ? "Hantar Masalah ke WhatsApp Synotech" : "Forward Problem to WhatsApp Synotech",
-        understandingMsg: (text, advice) => isMs ?
-          `Saya faham masalah anda.<br><br>💡 <strong>Cadangan Synotech:</strong><br>${advice}<br><br>Sila klik butang di bawah untuk menghantar mesej rujukan masalah anda ("<em>${text}</em>") terus ke juruteknik kami di WhatsApp untuk semakan lanjut.` :
-          `I understand your problem.<br><br>💡 <strong>Synotech Suggestion:</strong><br>${advice}<br><br>Click the button below to send your issue reference ("<em>${text}</em>") directly to our technician on WhatsApp for further review.`,
-        waDiscussBtn: isMs ? "Bincang di WhatsApp Sekarang" : "Discuss on WhatsApp Now",
-        genericReply: (text) => isMs ?
-          `Terima kasih atas mesej anda.<br><br>Pertanyaan anda mengenai "<em>${text}</em>" sedia untuk dirujuk ke bahagian sokongan teknikal Synotech.<br><br>Sila klik butang di bawah untuk terus menghantar soalan ini secara langsung ke WhatsApp kami di <strong>+601174407112</strong>.` :
-          `Thank you for your message.<br><br>Your inquiry about "<em>${text}</em>" is ready to be forwarded to Synotech technical support.<br><br>Click the button below to send this question directly to our WhatsApp at <strong>+601174407112</strong>.`,
-        waContinueBtn: isMs ? "Teruskan ke WhatsApp" : "Continue to WhatsApp"
-      };
-    }
-
-    function UI() { return getUITexts(currentLang); }
-
-    function serviceData() { return getServiceData(currentLang); }
-
-    function keywordDB() { return getKeywordDatabase(currentLang); }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  WHATSAPP URL
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function createWhatsAppUrl(customText) {
-      const baseUrl = "https://wa.me/" + WHATSAPP_NUMBER;
-      const prefix = currentLang === 'ms' ?
-        "Hi Synotech Computer Kuala Terengganu! Saya perlukan info mengenai servis ini:\n\n👉 *" :
-        "Hi Synotech Computer Kuala Terengganu! I need info about this service:\n\n👉 *";
-      return `${baseUrl}?text=${encodeURIComponent(prefix + customText + "*")}`;
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  TOGGLE OPTIONS (fixed: properly hide/show)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function toggleOptions() {
-      optionsExpanded = !optionsExpanded;
-      if (optionsExpanded) {
-        optionsContainer.classList.add('expanded');
-        optionsToggleIcon.textContent = '✖';
-        optionsToggleText.textContent = UI().toggleBtnClose.replace('✖ ', '');
-      } else {
-        optionsContainer.classList.remove('expanded');
-        optionsToggleIcon.textContent = '⚡';
-        optionsToggleText.textContent = UI().toggleBtnOpen.replace('⚡ ', '');
-      }
-      // scroll to bottom if expanded
-      if (optionsExpanded) chatHistory.scrollTop = chatHistory.scrollHeight;
-    }
-
-    function updateToggleButtonText() {
-      if (optionsExpanded) {
-        optionsToggleIcon.textContent = '✖';
-        optionsToggleText.textContent = UI().toggleBtnClose.replace('✖ ', '');
-      } else {
-        optionsToggleIcon.textContent = '⚡';
-        optionsToggleText.textContent = UI().toggleBtnOpen.replace('⚡ ', '');
-      }
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  LANGUAGE TOGGLE
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function toggleLanguage() {
-      currentLang = (currentLang === 'ms') ? 'en' : 'ms';
-      langIcon.textContent = currentLang === 'ms' ? '🇲🇾' : '🇬🇧';
-      langText.textContent = currentLang === 'ms' ? 'BM' : 'EN';
-      chatHistory.innerHTML = '';
-      // reset options to closed
-      optionsContainer.classList.remove('expanded');
-      optionsExpanded = false;
-      updateToggleButtonText();
-      initBot();
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  APPEND MESSAGE (glass bubbles – avatar without circle mask)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function appendMessage(sender, text, isHtml = false) {
-      const bubble = document.createElement('div');
-      bubble.className =
-        `flex items-start gap-2.5 ${sender === 'user' ? 'justify-end' : ''}`;
-      const time = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
-      const ui = UI();
-
-      if (sender === 'bot') {
-        bubble.innerHTML = `
-            <div class="bot-avatar-wrapper">
-              <img src="https://hitpay-production.s3.ap-southeast-1.amazonaws.com/logos/logo-head-mascoitt-6a32cef515c52.png" 
-                   alt="Syno" class="bot-avatar-img">
-            </div>
-            <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 rounded-2xl rounded-tl-none glass-bubble-bot">
-              <p class="text-sm font-semibold text-slate-700 mb-1">${ui.assistantName}</p>
-              <div class="text-xs text-slate-700 leading-relaxed">${isHtml ? text : text.replace(/\n/g, '<br>')}</div>
-              <span class="text-[9px] text-slate-400 mt-2 text-right">${time}</span>
-            </div>
-          `;
-      } else {
-        bubble.innerHTML = `
-            <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 rounded-2xl rounded-tr-none glass-bubble-user">
-              <p class="text-sm font-semibold text-slate-700 mb-1">${ui.userLabel}</p>
-              <p class="text-xs text-slate-700 leading-relaxed">${text}</p>
-              <span class="text-[9px] text-slate-400/80 mt-2 text-right">${time}</span>
-            </div>
-          `;
-      }
-
-      chatHistory.appendChild(bubble);
-      chatHistory.scrollTop = chatHistory.scrollHeight;
-      return bubble;
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  RENDER MAIN OPTIONS
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function renderMainOptions() {
-      const ui = UI();
-      currentMenuLabel.innerText = ui.mainMenu;
-      optionsLabel.innerText = ui.smartOptions;
-      optionsButtons.innerHTML = "";
-      currentLevel = "main";
-
-      serviceData().main.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className =
-          "glass-option-btn text-slate-700 rounded-xl text-xs font-semibold py-2 px-3 flex items-center gap-1 active:scale-95";
-        btn.innerHTML = opt.label;
-        btn.onclick = () => selectCategory(opt.id);
-        optionsButtons.appendChild(btn);
-      });
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  SELECT CATEGORY
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function selectCategory(catId) {
-      const category = serviceData()[catId];
-      if (!category) return;
-      const ui = UI();
-
-      currentMenuLabel.innerText = category.title;
-      optionsButtons.innerHTML = "";
-      currentLevel = catId;
-
-      const backBtn = document.createElement('button');
-      backBtn.className =
-        "glass-option-btn text-rose-600 hover:text-rose-700 rounded-xl text-xs font-bold py-2 px-3 active:scale-95";
-      backBtn.innerHTML = ui.backBtn;
-      backBtn.onclick = renderMainOptions;
-      optionsButtons.appendChild(backBtn);
-
-      category.items.forEach(item => {
-        const btn = document.createElement('button');
-        btn.className =
-          "glass-option-btn text-slate-700 rounded-xl text-xs font-medium py-2 px-3 active:scale-95";
-        btn.innerText = item.name;
-        btn.onclick = () => selectServiceItem(item.name, item.msg);
-        optionsButtons.appendChild(btn);
-      });
-
-      if (!optionsExpanded) toggleOptions();
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  SELECT SERVICE ITEM
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function selectServiceItem(serviceName, msg) {
-      const ui = UI();
-      appendMessage('user', ui.serviceChosen(serviceName));
-      setTimeout(() => {
-        const waUrl = createWhatsAppUrl(msg);
-        const botResponse = ui.rightChoice(serviceName) + `
-              <a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-2 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
-                ${ui.waBtn}
-              </a>
-            `;
-        appendMessage('bot', botResponse, true);
-        offerResetOption();
-      }, 500);
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  OFFER RESET OPTION
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function offerResetOption() {
-      const ui = UI();
-      optionsButtons.innerHTML = "";
-      const resetBtn = document.createElement('button');
-      resetBtn.className =
-        "glass-option-btn text-slate-700 font-bold py-2 px-4 active:scale-95";
-      resetBtn.innerHTML = ui.resetBtn;
-      resetBtn.onclick = renderMainOptions;
-      optionsButtons.appendChild(resetBtn);
-      if (!optionsExpanded) toggleOptions();
-    }
-
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  HANDLE FORM SUBMIT
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    function handleFormSubmit(event) {
-      event.preventDefault();
-      const text = userInput.value.trim();
-      if (!text) return;
-      userInput.value = "";
-
-      appendMessage('user', text);
-
-      let matchedCategory = null,
-        matchedAdvice = "";
-      const lowerText = text.toLowerCase();
-      const db = keywordDB();
-      for (let i = 0; i < db.length; i++) {
-        if (db[i].keywords.some(kw => lowerText.includes(kw))) {
-          matchedCategory = db[i].category;
-          matchedAdvice = db[i].advice;
-          break;
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  KATA KUNCI (dwibahasa)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function getKeywordDatabase(lang) {
+            const isMs = (lang === 'ms');
+            return [
+                { keywords: ["slow", "lembab", "laju", "ssd", "ram", "upgrade", "tambah", "pantas"], category: "upgrade",
+                    advice: isMs ?
+                        "Masalah komputer lembab biasanya berpunca daripada penggunaan hard disk lama (HDD) atau RAM yang tidak mencukupi. Kami amat menyarankan upgrade ke SSD dan tambah RAM untuk peningkatan kelajuan sehingga 10 kali ganda!" :
+                        "Slow computer issues are usually caused by an old hard disk (HDD) or insufficient RAM. We highly recommend upgrading to SSD and adding more RAM for up to 10x speed improvement!" },
+                { keywords: ["format", "windows", "reinstall", "sistem", "os", "operating system"], category: "upgrade",
+                    advice: isMs ?
+                        "Sistem operasi yang korup atau sudah lama boleh menyebabkan komputer tidak stabil. Kami menyediakan servis format & reinstall Windows bersih berserta software asas." :
+                        "A corrupted or old operating system can cause instability. We provide clean format & reinstall Windows with basic software." },
+                { keywords: ["panas", "habuk", "kipas", "thermal paste", "cuci", "vacuum", "bising", "padam sendiri",
+                        "shutdown"
+                    ], category: "maintenance",
+                    advice: isMs ?
+                        "Komputer yang terlampau panas (overheating) biasanya berpunca daripada habuk yang tersumbat di kipas dan thermal paste yang telah kering. Kami menawarkan servis cuci dalaman & tukar thermal paste premium." :
+                        "Overheating computers are usually caused by dust clogging the fan and dried thermal paste. We offer internal cleaning & premium thermal paste replacement." },
+                { keywords: ["skrin", "screen", "pecah", "crack", "display", "gelap", "blue screen", "bsod", "rosak",
+                        "repair", "baiki", "no power", "tidak boleh on", "motherboard", "keyboard"
+                    ], category: "repair",
+                    advice: isMs ?
+                        "Kami mahir mengendalikan pelbagai baik pulih hardware termasuk penukaran skrin pecah, keyboard rosak, masalah laptop tidak boleh ON, kerosakan motherboard, dan masalah komponen lain." :
+                        "We are skilled in various hardware repairs including broken screen replacement, faulty keyboard, laptop not powering on, motherboard damage, and other component issues." },
+                { keywords: ["printer", "cetak", "print", "dakwat", "ink", "paper jam"], category: "printer",
+                    advice: isMs ?
+                        "Kami menyediakan servis baik pulih printer serta konsultasi penyelenggaraan bagi printer jenis inkjet mahupun laserjet." :
+                        "We provide printer repair services and maintenance consultations for both inkjet and laserjet printers." },
+                { keywords: ["virus", "malware", "adware", "data hilang", "backup", "transfer", "pindah data", "software",
+                        "office"
+                    ], category: "data_software",
+                    advice: isMs ?
+                        "Lindungi data anda daripada serangan ransomware/virus. Kami menyediakan servis membersihkan virus, backup data, pemindahan data ke peranti baru, dan pemasangan perisian penting." :
+                        "Protect your data from ransomware/virus attacks. We provide virus cleaning, data backup, data transfer to new devices, and essential software installation." },
+                { keywords: ["wifi", "router", "internet", "lan", "network", "kabel", "unifi"], category: "networking",
+                    advice: isMs ?
+                        "Kami menawarkan khidmat pemasangan rangkaian (networking), troubleshoot router, pemasangan WiFi di kediaman serta pejabat kecil." :
+                        "We offer network installation services, router troubleshooting, WiFi setup for homes and small offices." },
+                { keywords: ["beli", "harga", "laptop baru", "second", "refurbished", "terpakai", "aksesori", "mouse",
+                        "keyboard"
+                    ], category: "jualan",
+                    advice: isMs ?
+                        "Kami ada menjual pelbagai pilihan laptop baru, laptop terpakai berkualiti (refurbished), komputer desktop, dan aksesori gajet pada harga yang sangat berpatutan." :
+                        "We sell a variety of new laptops, quality used (refurbished) laptops, desktop computers, and gadget accessories at very reasonable prices." }
+            ];
         }
-      }
 
-      const ui = UI();
-      setTimeout(() => {
-        const waUrl = createWhatsAppUrl(text);
-        if (matchedCategory) {
-          const botResponse = ui.understandingMsg(text, matchedAdvice) + `
-                <a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
-                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
-                  ${ui.waDiscussBtn}
-                </a>
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  MESEJ ALU-ALUAN + PETA
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        const mapIframeHTML =
+            `<div class="w-full h-48 mt-2">
+              <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7567.739544985522!2d103.158861!3d5.313232600000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31b7bfe6ec163b95%3A0xd139f102e1b80bda!2sSynotech%20-%20Kedai%20Jual%20dan%20Baiki%20Laptop%20Komputer%20Kuala%20Terengganu!5e1!3m2!1sen!2smy!4v1781289487537!5m2!1sen!2smy" 
+                      class="map-iframe" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>`;
+
+        function getIntroMessages(lang) {
+            const isMs = (lang === 'ms');
+            const mapBlock = mapIframeHTML;
+            if (isMs) {
+                return [
+                    `Selamat datang ke <strong>Synotech Computer Kuala Terengganu</strong>! 🛠️ <br><br>
+                  Kami sedia membantu membaiki laptop, komputer desktop, upgrade, servis printer dan membekalkan aksesori berkualiti.
+                  <br><br>
+                  📍 Lokasi kami di Pantai Batu Buruk, Kuala Terengganu.<br>
+                  ${mapBlock}
+                  <br>Gunakan butang <strong>⚡ Pilihan Pintar</strong> di bawah untuk memilih kategori.`,
+
+                    `Hai! 👋 Terima kasih singgah ke <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
+                  Kami pakar dalam baik pulih komputer, laptop, servis pencetak, dan naik taraf sistem.
+                  <br><br>
+                  🗺️ Pantai Batu Buruk, Kuala Terengganu —
+                  ${mapBlock}
+                  <br>Ketik <strong>⚡ Pilihan Pintar</strong> untuk mulakan.`,
+
+                    `Apa khabar! Selamat datang ke kedai kami – <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
+                  Dari baiki laptop rosak hingga pasang WiFi pejabat, kami sedia bantu.
+                  <br><br>
+                  📍 Pantai Batu Buruk, Kuala Terengganu.
+                  ${mapBlock}
+                  <br>Ketahui perkhidmatan kami melalui butang <strong>⚡ Pilihan Pintar</strong>.`,
+
+                    `Hai, terima kasih hubungi Synotech! 👨‍💻<br><br>
+                  Anda kini berhubung dengan <strong>Synotech Computer Kuala Terengganu</strong>, pakar komputer di Kuala Terengganu.
+                  <br><br>
+                  📍 Pantai Batu Buruk —
+                  ${mapBlock}
+                  <br>Pilih kategori masalah anda melalui <strong>⚡ Pilihan Pintar</strong>.`,
+
+                    `Salam sejahtera! 🤝<br><br>
+                  <strong>Synotech Computer Kuala Terengganu</strong> mengalu-alukan anda.
+                  <br><br>
+                  🗺️ Pantai Batu Buruk, Kuala Terengganu
+                  ${mapBlock}
+                  <br>Untuk bermula, ketik butang <strong>⚡ Pilihan Pintar</strong> di bawah.`
+                ];
+            } else {
+                return [
+                    `Welcome to <strong>Synotech Computer Kuala Terengganu</strong>! 🛠️ <br><br>
+                  We are ready to help with laptop repairs, desktop computers, upgrades, printer services, and quality accessories.
+                  <br><br>
+                  📍 Our location: Pantai Batu Buruk, Kuala Terengganu.<br>
+                  ${mapBlock}
+                  <br>Tap the <strong>⚡ Smart Options</strong> button below to choose a category.`,
+
+                    `Hi! 👋 Thanks for visiting <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
+                  We specialize in computer & laptop repair, printer servicing, and system upgrades.
+                  <br><br>
+                  🗺️ Pantai Batu Buruk, Kuala Terengganu —
+                  ${mapBlock}
+                  <br>Tap <strong>⚡ Smart Options</strong> to get started.`,
+
+                    `Welcome to our store – <strong>Synotech Computer Kuala Terengganu</strong>.<br><br>
+                  From fixing a broken laptop to setting up office WiFi, we are here to help.
+                  <br><br>
+                  📍 Pantai Batu Buruk, Kuala Terengganu.
+                  ${mapBlock}
+                  <br>Explore our services with the <strong>⚡ Smart Options</strong> button.`,
+
+                    `Hi, thanks for reaching out to Synotech! 👨‍💻<br><br>
+                  You're now connected with <strong>Synotech Computer Kuala Terengganu</strong>, computer experts in Kuala Terengganu.
+                  <br><br>
+                  📍 Pantai Batu Buruk —
+                  ${mapBlock}
+                  <br>Select your issue category via <strong>⚡ Smart Options</strong>.`,
+
+                    `Greetings! 🤝<br><br>
+                  <strong>Synotech Computer Kuala Terengganu</strong> welcomes you.
+                  <br><br>
+                  🗺️ Pantai Batu Buruk, Kuala Terengganu
+                  ${mapBlock}
+                  <br>To begin, tap the <strong>⚡ Smart Options</strong> button below.`
+                ];
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  TEKS ANTARA MUKA (dwibahasa)
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function getUITexts(lang) {
+            const isMs = (lang === 'ms');
+            return {
+                assistantName: "Syno Assistant",
+                smartOptions: isMs ? "💡 Pilihan Pintar" : "💡 Smart Options",
+                mainMenu: isMs ? "Utama" : "Main",
+                backBtn: isMs ? "🔙 Menu Utama" : "🔙 Main Menu",
+                resetBtn: isMs ? "🔄 Tanya Mengenai Servis Lain" : "🔄 Ask About Another Service",
+                userLabel: isMs ? "Anda" : "You",
+                inputPlaceholder: isMs ? "Taip kerosakan anda disini…" : "Type your issue here…",
+                toggleBtnOpen: isMs ? "⚡ Pilihan Pintar" : "⚡ Smart Options",
+                toggleBtnClose: isMs ? "✖ Tutup Menu" : "✖ Close Menu",
+                serviceChosen: (name) => isMs ? `Saya berminat dengan: *${name}*` : `I'm interested in: *${name}*`,
+                rightChoice: (name) => isMs ?
+                    `Satu pilihan yang tepat! Kami sedia membantu anda untuk urusan <strong>${name}</strong> di Synotech Computer Kuala Terengganu.<br><br>Untuk respon terpantas, hantarkan mesej tempahan/pertanyaan ini terus ke talian WhatsApp rasmi kami.<br><br>` :
+                    `Great choice! We are ready to assist you with <strong>${name}</strong> at Synotech Computer Kuala Terengganu.<br><br>For the fastest response, send this booking/inquiry directly to our official WhatsApp line.<br><br>`,
+                waBtn: isMs ? "Hantar Masalah ke WhatsApp Synotech" : "Forward Problem to WhatsApp Synotech",
+                understandingMsg: (text, advice) => isMs ?
+                    `Saya faham masalah anda.<br><br>💡 <strong>Cadangan Synotech:</strong><br>${advice}<br><br>Sila klik butang di bawah untuk menghantar mesej rujukan masalah anda ("<em>${text}</em>") terus ke juruteknik kami di WhatsApp untuk semakan lanjut.` :
+                    `I understand your problem.<br><br>💡 <strong>Synotech Suggestion:</strong><br>${advice}<br><br>Click the button below to send your issue reference ("<em>${text}</em>") directly to our technician on WhatsApp for further review.`,
+                waDiscussBtn: isMs ? "Bincang di WhatsApp Sekarang" : "Discuss on WhatsApp Now",
+                genericReply: (text) => isMs ?
+                    `Terima kasih atas mesej anda.<br><br>Pertanyaan anda mengenai "<em>${text}</em>" sedia untuk dirujuk ke bahagian sokongan teknikal Synotech.<br><br>Sila klik butang di bawah untuk terus menghantar soalan ini secara langsung ke WhatsApp kami di <strong>+601174407112</strong>.` :
+                    `Thank you for your message.<br><br>Your inquiry about "<em>${text}</em>" is ready to be forwarded to Synotech technical support.<br><br>Click the button below to send this question directly to our WhatsApp at <strong>+601174407112</strong>.`,
+                waContinueBtn: isMs ? "Teruskan ke WhatsApp" : "Continue to WhatsApp"
+            };
+        }
+
+        function UI() { return getUITexts(currentLang); }
+
+        function serviceData() { return getServiceData(currentLang); }
+
+        function keywordDB() { return getKeywordDatabase(currentLang); }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  WHATSAPP URL
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function createWhatsAppUrl(customText) {
+            const baseUrl = "https://wa.me/" + WHATSAPP_NUMBER;
+            const prefix = currentLang === 'ms' ?
+                "Hi Synotech Computer Kuala Terengganu! Saya perlukan info mengenai servis ini:\n\n👉 *" :
+                "Hi Synotech Computer Kuala Terengganu! I need info about this service:\n\n👉 *";
+            return `${baseUrl}?text=${encodeURIComponent(prefix + customText + "*")}`;
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  TOGGLE OPTIONS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function toggleOptions() {
+            optionsExpanded = !optionsExpanded;
+            if (optionsExpanded) {
+                optionsContainer.classList.add('expanded');
+                optionsToggleIcon.textContent = '✖';
+                optionsToggleText.textContent = UI().toggleBtnClose.replace('✖ ', '');
+            } else {
+                optionsContainer.classList.remove('expanded');
+                optionsToggleIcon.textContent = '⚡';
+                optionsToggleText.textContent = UI().toggleBtnOpen.replace('⚡ ', '');
+            }
+            if (optionsExpanded) chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function updateToggleButtonText() {
+            if (optionsExpanded) {
+                optionsToggleIcon.textContent = '✖';
+                optionsToggleText.textContent = UI().toggleBtnClose.replace('✖ ', '');
+            } else {
+                optionsToggleIcon.textContent = '⚡';
+                optionsToggleText.textContent = UI().toggleBtnOpen.replace('⚡ ', '');
+            }
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  LANGUAGE TOGGLE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function toggleLanguage() {
+            currentLang = (currentLang === 'ms') ? 'en' : 'ms';
+            langIcon.textContent = currentLang === 'ms' ? '🇲🇾' : '🇬🇧';
+            langText.textContent = currentLang === 'ms' ? 'BM' : 'EN';
+            chatHistory.innerHTML = '';
+            optionsContainer.classList.remove('expanded');
+            optionsExpanded = false;
+            updateToggleButtonText();
+            initBot();
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  APPEND MESSAGE
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function appendMessage(sender, text, isHtml = false) {
+            const bubble = document.createElement('div');
+            bubble.className =
+                `flex items-start gap-2.5 ${sender === 'user' ? 'justify-end' : ''}`;
+            const time = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+            const ui = UI();
+
+            if (sender === 'bot') {
+                bubble.innerHTML = `
+                <div class="bot-avatar-wrapper">
+                  <img src="https://hitpay-production.s3.ap-southeast-1.amazonaws.com/logos/logo-head-mascoitt-6a32cef515c52.png" 
+                       alt="Syno" class="bot-avatar-img">
+                </div>
+                <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 rounded-2xl rounded-tl-none bubble-bot">
+                  <p class="text-sm font-semibold text-slate-700 mb-1">${ui.assistantName}</p>
+                  <div class="text-xs text-slate-700 leading-relaxed">${isHtml ? text : text.replace(/\n/g, '<br>')}</div>
+                  <span class="text-[9px] text-slate-400 mt-2 text-right">${time}</span>
+                </div>
               `;
-          appendMessage('bot', botResponse, true);
-          selectCategory(matchedCategory);
-        } else {
-          const botResponse = ui.genericReply(text) + `
-                <a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
-                  <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
-                  ${ui.waContinueBtn}
-                </a>
+            } else {
+                bubble.innerHTML = `
+                <div class="flex flex-col w-full max-w-[85%] leading-1.5 p-4 rounded-2xl rounded-tr-none bubble-user">
+                  <p class="text-sm font-semibold text-slate-700 mb-1">${ui.userLabel}</p>
+                  <p class="text-xs text-slate-700 leading-relaxed">${text}</p>
+                  <span class="text-[9px] text-slate-400/80 mt-2 text-right">${time}</span>
+                </div>
               `;
-          appendMessage('bot', botResponse, true);
-          offerResetOption();
+            }
+
+            chatHistory.appendChild(bubble);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            return bubble;
         }
-      }, 600);
-    }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //  INIT
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    window.onload = () => {
-      langIcon.textContent = '🇲🇾';
-      langText.textContent = 'BM';
-      initBot();
-    };
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  RENDER MAIN OPTIONS
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function renderMainOptions() {
+            const ui = UI();
+            currentMenuLabel.innerText = ui.mainMenu;
+            optionsLabel.innerText = ui.smartOptions;
+            optionsButtons.innerHTML = "";
+            currentLevel = "main";
 
-    function initBot() {
-      const intros = getIntroMessages(currentLang);
-      const randomIndex = Math.floor(Math.random() * intros.length);
-      appendMessage('bot', intros[randomIndex], true);
-      renderMainOptions();
-      updateToggleButtonText();
-    }
-  </script>
+            serviceData().main.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className =
+                    "glass-btn-primary text-slate-700 rounded-xl text-xs font-semibold py-2 px-3 flex items-center gap-1 active:scale-95";
+                btn.innerHTML = opt.label;
+                btn.onclick = () => selectCategory(opt.id);
+                optionsButtons.appendChild(btn);
+            });
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  SELECT CATEGORY
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function selectCategory(catId) {
+            const category = serviceData()[catId];
+            if (!category) return;
+            const ui = UI();
+
+            currentMenuLabel.innerText = category.title;
+            optionsButtons.innerHTML = "";
+            currentLevel = catId;
+
+            const backBtn = document.createElement('button');
+            backBtn.className =
+                "glass-btn-primary text-rose-600 hover:text-rose-700 rounded-xl text-xs font-bold py-2 px-3 active:scale-95";
+            backBtn.innerHTML = ui.backBtn;
+            backBtn.onclick = renderMainOptions;
+            optionsButtons.appendChild(backBtn);
+
+            category.items.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className =
+                    "glass-btn-primary text-slate-700 rounded-xl text-xs font-medium py-2 px-3 active:scale-95";
+                btn.innerText = item.name;
+                btn.onclick = () => selectServiceItem(item.name, item.msg);
+                optionsButtons.appendChild(btn);
+            });
+
+            if (!optionsExpanded) toggleOptions();
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  SELECT SERVICE ITEM
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function selectServiceItem(serviceName, msg) {
+            const ui = UI();
+            appendMessage('user', ui.serviceChosen(serviceName));
+            setTimeout(() => {
+                const waUrl = createWhatsAppUrl(msg);
+                const botResponse = ui.rightChoice(serviceName) + `
+                  <a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-2 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
+                    ${ui.waBtn}
+                  </a>
+                `;
+                appendMessage('bot', botResponse, true);
+                offerResetOption();
+            }, 500);
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  OFFER RESET OPTION
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function offerResetOption() {
+            const ui = UI();
+            optionsButtons.innerHTML = "";
+            const resetBtn = document.createElement('button');
+            resetBtn.className =
+                "glass-btn-primary text-slate-700 font-bold py-2 px-4 active:scale-95";
+            resetBtn.innerHTML = ui.resetBtn;
+            resetBtn.onclick = renderMainOptions;
+            optionsButtons.appendChild(resetBtn);
+            if (!optionsExpanded) toggleOptions();
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  HANDLE FORM SUBMIT
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const text = userInput.value.trim();
+            if (!text) return;
+            userInput.value = "";
+
+            appendMessage('user', text);
+
+            let matchedCategory = null,
+                matchedAdvice = "";
+            const lowerText = text.toLowerCase();
+            const db = keywordDB();
+            for (let i = 0; i < db.length; i++) {
+                if (db[i].keywords.some(kw => lowerText.includes(kw))) {
+                    matchedCategory = db[i].category;
+                    matchedAdvice = db[i].advice;
+                    break;
+                }
+            }
+
+            const ui = UI();
+            setTimeout(() => {
+                const waUrl = createWhatsAppUrl(text);
+                if (matchedCategory) {
+                    const botResponse = ui.understandingMsg(text, matchedAdvice) + `
+                      <a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
+                        ${ui.waDiscussBtn}
+                      </a>
+                    `;
+                    appendMessage('bot', botResponse, true);
+                    selectCategory(matchedCategory);
+                } else {
+                    const botResponse = ui.genericReply(text) + `
+                      <a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
+                        ${ui.waContinueBtn}
+                      </a>
+                    `;
+                    appendMessage('bot', botResponse, true);
+                    offerResetOption();
+                }
+            }, 600);
+        }
+
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        //  INIT
+        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        window.onload = () => {
+            langIcon.textContent = '🇲🇾';
+            langText.textContent = 'BM';
+            initBot();
+        };
+
+        function initBot() {
+            const intros = getIntroMessages(currentLang);
+            const randomIndex = Math.floor(Math.random() * intros.length);
+            appendMessage('bot', intros[randomIndex], true);
+            renderMainOptions();
+            updateToggleButtonText();
+        }
+    </script>
 </body>
 </html>
