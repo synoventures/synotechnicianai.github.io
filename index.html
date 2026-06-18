@@ -93,7 +93,7 @@
             border-radius: 14px;
         }
         #options-container.expanded {
-            max-height: 320px;
+            max-height: 380px;
             margin-bottom: 12px;
             padding: 10px !important;
             border-width: 1px !important;
@@ -131,6 +131,20 @@
         .glass-btn-primary:hover {
             background: rgba(241, 245, 249, 0.60);
             border-color: rgba(148, 163, 184, 0.3);
+            transform: scale(0.97);
+        }
+
+        .glass-btn-danger {
+            background: rgba(255, 235, 235, 0.40);
+            backdrop-filter: blur(12px) saturate(1.2);
+            -webkit-backdrop-filter: blur(12px) saturate(1.2);
+            border: 1px solid rgba(255, 200, 200, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+        .glass-btn-danger:hover {
+            background: rgba(255, 200, 200, 0.50);
+            border-color: rgba(255, 150, 150, 0.4);
             transform: scale(0.97);
         }
 
@@ -222,7 +236,6 @@
             background: radial-gradient(circle at 80% 70%, rgba(165, 180, 252, 0.25) 0%, transparent 55%);
         }
 
-        /* typing indicator */
         .typing-dots {
             display: inline-flex;
             gap: 4px;
@@ -270,7 +283,6 @@
             transform: scale(0.96);
         }
 
-        /* conversation context badge */
         .ctx-badge {
             background: rgba(255, 255, 255, 0.20);
             backdrop-filter: blur(8px);
@@ -281,6 +293,17 @@
             border-radius: 12px;
             color: #64748b;
             letter-spacing: 0.3px;
+        }
+
+        .reset-btn-icon {
+            font-size: 12px;
+        }
+
+        .menu-divider {
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.25);
+            margin: 4px 0 8px 0;
         }
     </style>
 </head>
@@ -347,8 +370,16 @@
         let optionsExpanded = false;
         let isProcessing = false;
 
+        // ─── menu state ───
+        let menuState = {
+            type: 'main', // 'main' | 'sub' | 'state'
+            categoryId: null, // for sub
+            stateName: null, // for state
+            history: [] // stack for back navigation
+        };
+
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  CONVERSATION STATE ENGINE
+        //  CONVERSATION ENGINE (enhanced)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         class ConversationEngine {
             constructor(lang) {
@@ -357,7 +388,7 @@
             }
 
             reset() {
-                this.state = 'welcome'; // welcome | problem_gathering | clarifying | solution | booking | followup
+                this.state = 'welcome';
                 this.turn = 0;
                 this.context = {
                     problem: '',
@@ -368,11 +399,12 @@
                     lastQuestion: '',
                     mentionedServices: [],
                     resolved: false,
-                    readyToBook: false
+                    readyToBook: false,
+                    categorySelected: null
                 };
                 this.history = [];
                 this.followUpCount = 0;
-                this.maxFollowUps = 2;
+                this.maxFollowUps = 3;
             }
 
             get isMs() { return this.lang === 'ms'; }
@@ -382,20 +414,19 @@
                 return dict[key] || fallback || key;
             }
 
-            // ─── process user input ───
             processInput(text) {
                 this.history.push({ role: 'user', text });
                 this.turn++;
 
                 const lower = text.toLowerCase().trim();
 
-                // Check for greetings / small talk
+                // Check for greeting
                 if (this.turn === 1 && this.isGreeting(lower)) {
                     return this.handleWelcome(text);
                 }
 
                 // Check for exit / done
-                if (this.isExit(lower)) {
+                if (this.isExit(lower) && this.state !== 'welcome') {
                     return this.handleExit();
                 }
 
@@ -404,7 +435,7 @@
                     return this.handleBookingIntent(text);
                 }
 
-                // Route based on current state
+                // Route based on state
                 switch (this.state) {
                     case 'welcome':
                         return this.handleWelcome(text);
@@ -427,8 +458,7 @@
 
             handleWelcome(text) {
                 const lower = text.toLowerCase().trim();
-                // If user immediately describes a problem, jump to gathering
-                if (this.isProblemDescription(lower)) {
+                if (this.isProblemDescription(lower) || text.length > 10) {
                     this.state = 'problem_gathering';
                     this.context.problem = text;
                     return this.generateProblemAck(text);
@@ -440,31 +470,25 @@
             handleProblemGathering(text) {
                 const lower = text.toLowerCase().trim();
 
-                // Store the problem
                 if (!this.context.problem || this.context.problem.length < 3) {
                     this.context.problem = text;
                 } else {
                     this.context.problem += ' ' + text;
                 }
 
-                // Detect device type
                 const device = this.detectDevice(lower);
                 if (device) this.context.device = device;
 
-                // Detect category
                 const cat = this.detectCategory(lower);
                 if (cat) this.context.issueCategory = cat;
 
-                // Detect urgency
                 if (this.isUrgent(lower)) this.context.urgency = 'urgent';
 
-                // Check if we have enough info
                 const hasDevice = !!this.context.device;
                 const hasCat = !!this.context.issueCategory;
                 const hasProblem = this.context.problem.length > 5;
 
                 if (hasProblem && (hasDevice || hasCat || this.turn > 3)) {
-                    // Move to clarifying or directly to solution
                     if (this.needsClarification()) {
                         this.state = 'clarifying';
                         return this.generateClarifyingQuestion();
@@ -473,7 +497,6 @@
                         return this.generateSolution();
                     }
                 } else {
-                    // Ask for more details
                     return this.generateProbingQuestion();
                 }
             }
@@ -481,15 +504,22 @@
             handleClarifying(text) {
                 const lower = text.toLowerCase().trim();
 
-                // Store clarification
                 if (!this.context.details.clarification) {
                     this.context.details.clarification = text;
                 } else {
                     this.context.details.clarification += ' ' + text;
                 }
 
-                // Check if user gave useful info
-                const hasNewInfo = text.length > 3;
+                // Detect device from clarifying response
+                const device = this.detectDevice(lower);
+                if (device && !this.context.device) this.context.device = device;
+
+                const cat = this.detectCategory(lower);
+                if (cat && !this.context.issueCategory) this.context.issueCategory = cat;
+
+                if (this.isUrgent(lower)) this.context.urgency = 'urgent';
+
+                const hasNewInfo = text.length > 3 || device || cat;
                 if (hasNewInfo || this.turn > 5) {
                     this.state = 'solution';
                     return this.generateSolution();
@@ -501,7 +531,6 @@
             handleSolution(text) {
                 const lower = text.toLowerCase().trim();
 
-                // Check if user wants to book or ask more
                 if (this.isBookingIntent(lower)) {
                     this.state = 'booking';
                     return this.generateBookingOffer();
@@ -516,14 +545,18 @@
                     return this.handleExit();
                 }
 
-                // If user says thanks or ok, move to followup
                 if (this.isAcknowledgment(lower)) {
                     this.state = 'followup';
                     this.followUpCount = 0;
                     return this.generateFollowup();
                 }
 
-                // Otherwise, stay in solution but offer more help
+                // If user types a new problem description
+                if (this.isProblemDescription(lower) && text.length > 5) {
+                    this.context.problem += ' ' + text;
+                    return this.generateSolution() + '<br><br>' + this.t('ask_more_help', 'Ada apa-apa lagi yang boleh saya bantu?');
+                }
+
                 return this.generateSolution() + '<br><br>' + this.t('ask_more_help', 'Ada apa-apa lagi yang boleh saya bantu?');
             }
 
@@ -543,7 +576,7 @@
                     return this.generateFarewell();
                 }
 
-                if (this.isProblemDescription(lower)) {
+                if (this.isProblemDescription(lower) && text.length > 5) {
                     this.state = 'problem_gathering';
                     this.context.problem = text;
                     return this.generateProblemAck(text);
@@ -554,7 +587,11 @@
                     return this.generateBookingOffer();
                 }
 
-                // Default followup
+                if (this.isMoreQuestion(lower)) {
+                    this.state = 'clarifying';
+                    return this.generateClarifyingQuestion();
+                }
+
                 return this.generateFollowup();
             }
 
@@ -575,34 +612,39 @@
 
             isGreeting(text) {
                 const greets = ['hi', 'hello', 'hai', 'salam', 'hey', 'selamat', 'apa khabar', 'good', 'morning',
-                    'afternoon', 'evening'
+                    'afternoon', 'evening', 'yo', 'wasap'
                 ];
                 return greets.some(g => text.includes(g));
             }
 
             isExit(text) {
                 const exits = ['bye', 'tata', 'jumpa', 'terima kasih', 'thanks', 'thank you', 'settle', 'selesai', 'okay',
-                    'ok'
+                    'ok', 'done', 'sudah', 'cukup'
                 ];
-                return exits.some(e => text.includes(e)) && text.length < 20;
+                return exits.some(e => text.includes(e)) && text.length < 25;
             }
 
             isProblemDescription(text) {
                 const indicators = ['rosak', 'tak boleh', 'tidak boleh', 'masalah', 'issue', 'sakit', 'error', 'crash',
                     'hang', 'slow', 'lembab', 'panas', 'bising', 'skrin', 'screen', 'keyboard', 'mouse', 'printer',
-                    'wifi', 'internet', 'virus', 'format', 'upgrade', 'ssd', 'ram', 'motherboard', 'power', 'on'
+                    'wifi', 'internet', 'virus', 'format', 'upgrade', 'ssd', 'ram', 'motherboard', 'power', 'on',
+                    'off', 'restart', 'blue screen', 'bsod', 'pecah', 'crack', 'display', 'gelap', 'no power',
+                    'battery', 'charger', 'adapter', 'cable', 'kabel', 'port', 'usb', 'hdmi', 'audio', 'speaker',
+                    'mic', 'camera', 'webcam', 'touchpad', 'trackpad', 'stuck', 'freeze', 'lag', 'stuttering'
                 ];
-                return indicators.some(i => text.includes(i)) && text.length > 5;
+                return indicators.some(i => text.includes(i)) && text.length > 4;
             }
 
             detectDevice(text) {
                 const devices = {
-                    'laptop': ['laptop', 'notebook', 'book'],
-                    'desktop': ['desktop', 'pc', 'komputer', 'computer', 'tower', 'cpu'],
-                    'printer': ['printer', 'cetak', 'print'],
-                    'phone': ['phone', 'telefon', 'hp', 'handphone'],
-                    'tablet': ['tablet', 'ipad'],
-                    'router': ['router', 'wifi', 'modem', 'unifi']
+                    'laptop': ['laptop', 'notebook', 'book', 'ultrabook', 'macbook', 'thinkpad', 'ideapad'],
+                    'desktop': ['desktop', 'pc', 'komputer', 'computer', 'tower', 'cpu', 'all-in-one', 'aio'],
+                    'printer': ['printer', 'cetak', 'print', 'inkjet', 'laser', 'thermal'],
+                    'phone': ['phone', 'telefon', 'hp', 'handphone', 'smartphone', 'iphone', 'android', 'samsung',
+                        'huawei'
+                    ],
+                    'tablet': ['tablet', 'ipad', 'galaxy tab', 'surface'],
+                    'router': ['router', 'wifi', 'modem', 'unifi', 'streamyx', 'broadband', 'mesh']
                 };
                 for (const [device, keywords] of Object.entries(devices)) {
                     if (keywords.some(k => text.includes(k))) return device;
@@ -612,16 +654,22 @@
 
             detectCategory(text) {
                 const cats = {
-                    'hardware': ['motherboard', 'skrin', 'screen', 'keyboard', 'mouse', 'power', 'battery', 'ram', 'ssd',
-                        'hard disk', 'hdd', 'cooling', 'kipas'
+                    'hardware': ['motherboard', 'skrin', 'screen', 'keyboard', 'mouse', 'power', 'battery', 'ram',
+                        'ssd', 'hard disk', 'hdd', 'cooling', 'kipas', 'charger', 'adapter', 'port', 'usb'
                     ],
-                    'software': ['format', 'windows', 'reinstall', 'virus', 'malware', 'software', 'app', 'application',
-                        'os', 'update'
+                    'software': ['format', 'windows', 'reinstall', 'virus', 'malware', 'software', 'app',
+                        'application', 'os', 'update', 'driver', 'bios', 'boot'
                     ],
-                    'network': ['wifi', 'internet', 'router', 'lan', 'network', 'unifi', 'streamyx', 'cable'],
-                    'printer': ['printer', 'cetak', 'print', 'dakwat', 'ink', 'paper jam'],
-                    'upgrade': ['upgrade', 'tambah', 'ssd', 'ram', 'laju', 'fast', 'speed', 'prestasi', 'performance'],
-                    'maintenance': ['servis', 'cuci', 'bersih', 'habuk', 'thermal paste', 'fan', 'kipas', 'bising']
+                    'network': ['wifi', 'internet', 'router', 'lan', 'network', 'unifi', 'streamyx', 'cable',
+                        'broadband', 'mesh', 'ip', 'dns'
+                    ],
+                    'printer': ['printer', 'cetak', 'print', 'dakwat', 'ink', 'paper jam', 'toner', 'cartridge'],
+                    'upgrade': ['upgrade', 'tambah', 'ssd', 'ram', 'laju', 'fast', 'speed', 'prestasi', 'performance',
+                        'gen4', 'nvme'
+                    ],
+                    'maintenance': ['servis', 'cuci', 'bersih', 'habuk', 'thermal paste', 'fan', 'kipas', 'bising',
+                        'overheat', 'vacuum'
+                    ]
                 };
                 for (const [cat, keywords] of Object.entries(cats)) {
                     if (keywords.some(k => text.includes(k))) return cat;
@@ -630,33 +678,37 @@
             }
 
             isUrgent(text) {
-                const urgent = ['urgent', 'segera', 'cepat', 'darurat', 'emergency', 'penting', 'now', 'hari ni'];
+                const urgent = ['urgent', 'segera', 'cepat', 'darurat', 'emergency', 'penting', 'now', 'hari ni',
+                    'hari ini', 'cepat-cepat', 'kecemasan'
+                ];
                 return urgent.some(u => text.includes(u));
             }
 
             isBookingIntent(text) {
                 const book = ['book', 'tempah', 'hantar', 'bawa', 'datang', 'appointment', 'janji', 'kedai', 'shop',
-                    'whatsapp', 'wa', 'contact', 'hubungi'
+                    'whatsapp', 'wa', 'contact', 'hubungi', 'servis', 'repair', 'baiki', 'call', 'telefon'
                 ];
                 return book.some(b => text.includes(b)) && text.length > 3;
             }
 
             isMoreQuestion(text) {
                 const more = ['apa', 'kenapa', 'bagaimana', 'how', 'why', 'what', 'boleh', 'tak boleh', 'tidak boleh',
-                    'macam mana'
+                    'macam mana', 'mana', 'which', 'bila', 'when', 'siapa', 'who', 'berapa', 'how much', 'price',
+                    'harga', 'kos'
                 ];
                 return more.some(m => text.includes(m));
             }
 
             isAcknowledgment(text) {
-                const ack = ['ok', 'okay', 'thanks', 'terima', 'baik', 'ya', 'yes', 'setuju', 'betul', 'bagus', 'noted'];
-                return ack.some(a => text.includes(a)) && text.length < 15;
+                const ack = ['ok', 'okay', 'thanks', 'terima', 'baik', 'ya', 'yes', 'setuju', 'betul', 'bagus', 'noted',
+                    'faham', 'paham', 'agree', 'okey', 'okeylah', 'baiklah'
+                ];
+                return ack.some(a => text.includes(a)) && text.length < 20;
             }
 
             needsClarification() {
-                // If we have both device and category, maybe skip clarification
                 if (this.context.device && this.context.issueCategory) return false;
-                if (this.turn > 3) return false;
+                if (this.turn > 4) return false;
                 return true;
             }
 
@@ -735,26 +787,25 @@
                 const cat = this.context.issueCategory || '';
                 const isUrgent = this.context.urgency === 'urgent';
 
-                // Build a tailored solution based on context
                 let advice = '';
                 let serviceMatch = '';
-
-                // Match against known issues
                 const lower = problem.toLowerCase();
 
                 // ── Hardware ──
                 if (lower.includes('skrin') || lower.includes('screen') || lower.includes('display') || lower.includes(
-                        'pecah')) {
+                        'pecah') || lower.includes('crack') || lower.includes('gelap')) {
                     advice = this.isMs ?
                         '💡 <strong>Cadangan Synotech:</strong> Masalah skrin biasanya memerlukan penggantian panel skrin. Kami ada stok untuk kebanyakan jenama popular. Proses mengambil masa 1-2 hari bekerja.' :
                         '💡 <strong>Synotech Suggestion:</strong> Screen issues usually require panel replacement. We stock most popular brands. Process takes 1-2 working days.';
                     serviceMatch = 'repair';
-                } else if (lower.includes('keyboard') || lower.includes('papan') || lower.includes('huruf')) {
+                } else if (lower.includes('keyboard') || lower.includes('papan') || lower.includes('huruf') || lower
+                    .includes('touchpad') || lower.includes('trackpad')) {
                     advice = this.isMs ?
-                        '💡 <strong>Cadangan Synotech:</strong> Keyboard yang rosak boleh diganti. Kami ada pelbagai jenis keyboard laptop dan external. Servis cepat, siap dalam masa sehari.' :
-                        '💡 <strong>Synotech Suggestion:</strong> Faulty keyboards can be replaced. We have various laptop and external keyboards. Fast service, done within a day.';
+                        '💡 <strong>Cadangan Synotech:</strong> Keyboard/touchpad yang rosak boleh diganti. Kami ada pelbagai jenis keyboard laptop dan external. Servis cepat, siap dalam masa sehari.' :
+                        '💡 <strong>Synotech Suggestion:</strong> Faulty keyboard/touchpad can be replaced. We have various laptop and external keyboards. Fast service, done within a day.';
                     serviceMatch = 'repair';
-                } else if (lower.includes('motherboard') || lower.includes('board') || lower.includes('papan induk')) {
+                } else if (lower.includes('motherboard') || lower.includes('board') || lower.includes('papan induk') ||
+                    lower.includes('logic')) {
                     advice = this.isMs ?
                         '💡 <strong>Cadangan Synotech:</strong> Masalah motherboard adalah antara yang paling kompleks. Kami ada peralatan diagnostik untuk mengenal pasti punca sebenar. Harga bergantung pada model dan kerosakan.' :
                         '💡 <strong>Synotech Suggestion:</strong> Motherboard issues are among the most complex. We have diagnostic equipment to identify the root cause. Price depends on model and damage.';
@@ -762,13 +813,13 @@
                 }
                 // ── Software ──
                 else if (lower.includes('format') || lower.includes('windows') || lower.includes('reinstall') || lower
-                    .includes('os')) {
+                    .includes('os') || lower.includes('boot') || lower.includes('bios')) {
                     advice = this.isMs ?
                         '💡 <strong>Cadangan Synotech:</strong> Servis format & reinstall Windows bersih. Kami akan backup data penting anda terlebih dahulu, kemudian install Windows + driver + software asas. Siap dalam 2-4 jam.' :
                         '💡 <strong>Synotech Suggestion:</strong> Clean format & Windows reinstall service. We\'ll backup your important data first, then install Windows + drivers + basic software. Done in 2-4 hours.';
                     serviceMatch = 'upgrade';
-                } else if (lower.includes('virus') || lower.includes('malware') || lower.includes('ransom') || lower.includes(
-                        'adware')) {
+                } else if (lower.includes('virus') || lower.includes('malware') || lower.includes('ransom') || lower
+                    .includes('adware') || lower.includes('trojan') || lower.includes('spyware')) {
                     advice = this.isMs ?
                         '💡 <strong>Cadangan Synotech:</strong> Pembersihan virus & malware secara menyeluruh. Kami menggunakan pelbagai antivirus dan anti-malware untuk memastikan sistem anda bersih 100%. Backup data juga disarankan.' :
                         '💡 <strong>Synotech Suggestion:</strong> Comprehensive virus & malware cleaning. We use multiple antivirus and anti-malware tools to ensure your system is 100% clean. Data backup is also recommended.';
@@ -776,23 +827,26 @@
                 }
                 // ── Performance ──
                 else if (lower.includes('slow') || lower.includes('lembab') || lower.includes('lambat') || lower.includes(
-                        'hang') || lower.includes('freeze')) {
+                        'hang') || lower.includes('freeze') || lower.includes('lag') || lower.includes('stuck') ||
+                    lower.includes('loading')) {
                     advice = this.isMs ?
                         '💡 <strong>Cadangan Synotech:</strong> Komputer yang perlahan biasanya berpunca dari hard disk (HDD) yang sudah tua atau RAM tidak mencukupi. <br><br>🔥 <strong>Pakej Upgrade Prestasi:</strong> Tukar ke SSD + tambah RAM = kelajuan sehingga 10x ganda! Harga bermula dari RM150 sahaja.' :
                         '💡 <strong>Synotech Suggestion:</strong> Slow computers are usually caused by an old hard disk (HDD) or insufficient RAM.<br><br>🔥 <strong>Performance Upgrade Package:</strong> Switch to SSD + add RAM = up to 10x speed! Prices starting from RM150 only.';
                     serviceMatch = 'upgrade';
                 }
                 // ── Network ──
-                else if (lower.includes('wifi') || lower.includes('internet') || lower.includes('router') || lower.includes(
-                        'lan') || lower.includes('unifi') || lower.includes('network')) {
+                else if (lower.includes('wifi') || lower.includes('internet') || lower.includes('router') || lower
+                    .includes('lan') || lower.includes('unifi') || lower.includes('network') || lower.includes(
+                        'streamyx') || lower.includes('broadband') || lower.includes('mesh')) {
                     advice = this.isMs ?
                         '💡 <strong>Cadangan Synotech:</strong> Masalah rangkaian boleh berpunca dari router, kabel, atau konfigurasi. Kami sediakan servis:<br>• Setup WiFi & Router<br>• Pemasangan kabel LAN<br>• Troubleshooting internet<br>• Konfigurasi network untuk pejabat/rumah' :
                         '💡 <strong>Synotech Suggestion:</strong> Network issues can stem from router, cables, or configuration. We provide:<br>• WiFi & Router Setup<br>• LAN cable installation<br>• Internet troubleshooting<br>• Network configuration for office/home';
                     serviceMatch = 'networking';
                 }
                 // ── Printer ──
-                else if (lower.includes('printer') || lower.includes('cetak') || lower.includes('print') || lower.includes(
-                        'dakwat') || lower.includes('paper jam') || lower.includes('ink')) {
+                else if (lower.includes('printer') || lower.includes('cetak') || lower.includes('print') || lower
+                    .includes('dakwat') || lower.includes('paper jam') || lower.includes('ink') || lower.includes(
+                        'toner') || lower.includes('cartridge')) {
                     advice = this.isMs ?
                         '💡 <strong>Cadangan Synotech:</strong> Kami servis semua jenama printer — inkjet, laser, thermal. Masalah biasa: paper jam, dakwat tidak keluar, error kod, atau sambungan. Servis cepat, siap dalam 1-2 jam.' :
                         '💡 <strong>Synotech Suggestion:</strong> We service all printer brands — inkjet, laser, thermal. Common issues: paper jam, ink not coming out, error codes, or connection. Fast service, done in 1-2 hours.';
@@ -800,7 +854,8 @@
                 }
                 // ── Maintenance ──
                 else if (lower.includes('panas') || lower.includes('habuk') || lower.includes('kipas') || lower.includes(
-                        'bising') || lower.includes('thermal') || lower.includes('cuci') || lower.includes('servis')) {
+                        'bising') || lower.includes('thermal') || lower.includes('cuci') || lower.includes('servis') ||
+                    lower.includes('overheat') || lower.includes('vacuum')) {
                     advice = this.isMs ?
                         '💡 <strong>Cadangan Synotech:</strong> Overheating & habuk adalah pembunuh senyap komputer!<br><br>🧹 <strong>Servis Pembersihan Dalaman:</strong><br>• Cuci habuk pada kipas & heatsink<br>• Tukar thermal paste premium<br>• Bersihkan motherboard & komponen<br>• Harga serendah RM80' :
                         '💡 <strong>Synotech Suggestion:</strong> Overheating & dust are silent computer killers!<br><br>🧹 <strong>Internal Cleaning Service:</strong><br>• Dust cleaning on fans & heatsink<br>• Premium thermal paste replacement<br>• Motherboard & component cleaning<br>• Prices as low as RM80';
@@ -809,7 +864,8 @@
                 // ── Sales ──
                 else if (lower.includes('beli') || lower.includes('harga') || lower.includes('baru') || lower.includes(
                         'second') || lower.includes('terpakai') || lower.includes('refurbished') || lower.includes(
-                        'aksesori')) {
+                        'aksesori') || lower.includes('mouse') || lower.includes('keyboard') || lower.includes(
+                        'cable') || lower.includes('charger')) {
                     advice = this.isMs ?
                         '💡 <strong>Cadangan Synotech:</strong> Kami ada stok laptop baru & terpakai (refurbished) dengan harga berpatutan. Semua laptop terpakai kami telah melalui pemeriksaan ketat dan waranti 6 bulan.<br><br>🛒 Juga ada aksesori: mouse, keyboard, kabel, adapter, charger, dll.' :
                         '💡 <strong>Synotech Suggestion:</strong> We have new & refurbished laptops at affordable prices. All our used laptops undergo strict inspection with 6-month warranty.<br><br>🛒 Also available: mouse, keyboard, cables, adapters, chargers, etc.';
@@ -823,18 +879,15 @@
                     serviceMatch = 'advice';
                 }
 
-                // Add urgency note
                 const urgencyNote = isUrgent ? this.isMs ?
                     '<br><br>⚡ <strong>Perhatian:</strong> Anda nyatakan ini urgent. Kami akan prioritikan servis anda!' :
                     '<br><br>⚡ <strong>Note:</strong> You indicated this is urgent. We will prioritize your service!' :
                     '';
 
-                // Store the matched service
                 if (serviceMatch) this.context.matchedService = serviceMatch;
 
                 this.state = 'solution';
 
-                // Build the full response
                 const bookOffer = this.isMs ?
                     `<br><br>📱 <strong>Mahu teruskan dengan tempahan?</strong><br>
               Klik butang di bawah untuk hantar terus ke WhatsApp kami — respon dalam masa 5 minit!` :
@@ -863,18 +916,6 @@
               • Kategori: ${this.context.issueCategory || 'Tidak dinyatakan'}<br>
               • Urgent: ${this.context.urgency === 'urgent' ? '✅ Ya' : '❌ Tidak'}<br><br>
               Tekan butang di bawah untuk memulakan perbualan di WhatsApp.` +
-                    `<br><br><a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
-                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
-                ${this.isMs ? '📲 Buka WhatsApp — Hantar Sekarang' : '📲 Open WhatsApp — Send Now'}
-              </a>` :
-                    `📋 <strong>Synotech Service Booking</strong><br><br>
-              I'll connect you directly to our customer service on WhatsApp.<br><br>
-              <strong>Info to be sent:</strong><br>
-              • Issue: ${this.context.problem || 'Not specified'}<br>
-              • Device: ${this.context.device || 'Not specified'}<br>
-              • Category: ${this.context.issueCategory || 'Not specified'}<br>
-              • Urgent: ${this.context.urgency === 'urgent' ? '✅ Yes' : '❌ No'}<br><br>
-              Tap the button below to start the WhatsApp conversation.` +
                     `<br><br><a href="${waUrl}" target="_blank" class="wa-pulse inline-flex items-center gap-2 justify-center w-full mt-3 py-3 px-4 bg-[#25D366] hover:bg-[#1da85c] text-white font-bold text-xs rounded-xl transition-all shadow-md active:scale-95">
                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.458 5.704 1.459h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
                 ${this.isMs ? '📲 Buka WhatsApp — Hantar Sekarang' : '📲 Open WhatsApp — Send Now'}
@@ -1051,10 +1092,9 @@
             if (el) el.remove();
         }
 
-        // ─── quick reply suggestions ───
+        // ─── quick replies ───
 
         function showQuickReplies(suggestions) {
-            // we'll render these in the options area as a temporary menu
             optionsButtons.innerHTML = '';
             const label = document.createElement('span');
             label.className = 'text-[10px] uppercase tracking-wider text-slate-500/80 font-semibold w-full mb-1';
@@ -1075,13 +1115,15 @@
 
             if (!optionsExpanded) toggleOptions();
             currentMenuLabel.textContent = conversation.isMs ? 'Balasan Cepat' : 'Quick Replies';
+            menuState.type = 'state';
+            menuState.stateName = 'quickreply';
         }
 
-        // ─── render main options ───
+        // ─── MAIN CATEGORIES ───
 
-        function renderMainOptions() {
+        function getMainCategories() {
             const isMs = conversation.isMs;
-            const mainItems = isMs ? [
+            return isMs ? [
                 { id: 'repair', label: '🛠️ Repair & Diagnostik' },
                 { id: 'upgrade', label: '⚡ Upgrade & Windows' },
                 { id: 'maintenance', label: '🧹 Cuci & Servis Habuk' },
@@ -1100,26 +1142,474 @@
                 { id: 'jualan', label: '💻 Sales & Devices' },
                 { id: 'advice', label: '📋 Consultation & Advice' }
             ];
+        }
 
-            currentMenuLabel.textContent = isMs ? 'Utama' : 'Main';
+        function getSubItems(catId) {
+            const isMs = conversation.isMs;
+            const data = {
+                repair: {
+                    title: isMs ? 'Baik Pulih & Diagnostik' : 'Repair & Diagnostics',
+                    items: [
+                        { name: isMs ? 'Repair Laptop' : 'Laptop Repair', msg: isMs ? 'Saya mahu hantar laptop untuk dibaiki di kedai.' :
+                                'I want to send my laptop for repair at your shop.' },
+                        { name: isMs ? 'Repair Komputer Desktop' : 'Desktop PC Repair', msg: isMs ?
+                                'Saya perlukan bantuan untuk baiki komputer desktop saya.' :
+                                'I need help repairing my desktop computer.' },
+                        { name: isMs ? 'Diagnostik Kerosakan' : 'Damage Diagnostics', msg: isMs ?
+                                'Laptop/PC saya mengalami masalah dan saya mahu buat diagnostik penuh.' :
+                                'My laptop/PC has issues and I need a full diagnostic.' },
+                        { name: isMs ? 'Repair Motherboard' : 'Motherboard Repair', msg: isMs ?
+                                'Motherboard laptop/PC saya disyaki rosak, mahu tahu sebut harga baiki.' :
+                                'My laptop/PC motherboard is suspected faulty, need a quote.' },
+                        { name: isMs ? 'Laptop Tidak Boleh ON' : 'Laptop Won\'t Power On', msg: isMs ?
+                                'Laptop saya langsung tidak boleh dihidupkan (No Power).' :
+                                'My laptop has no power, cannot turn on.' },
+                        { name: isMs ? 'Masalah Overheating / Panas' : 'Overheating Issues', msg: isMs ?
+                                'Laptop/PC saya selalu padam sendiri sebab terlampau panas.' :
+                                'My laptop/PC keeps shutting down due to overheating.' }
+                    ]
+                },
+                upgrade: {
+                    title: isMs ? 'Upgrade & Prestasi' : 'Upgrade & Performance',
+                    items: [
+                        { name: isMs ? 'Upgrade SSD (Laju 10x)' : 'Upgrade SSD (10x Faster)', msg: isMs ?
+                                'Saya nak upgrade SSD untuk lajukan laptop/PC saya.' :
+                                'I want to upgrade to SSD to speed up my laptop/PC.' },
+                        { name: isMs ? 'Upgrade RAM' : 'Upgrade RAM', msg: isMs ? 'Saya mahu tambah/upgrade RAM laptop/komputer saya.' :
+                                'I want to add/upgrade RAM for my laptop/computer.' },
+                        { name: isMs ? 'Pemasangan Semula Windows' : 'Windows Reinstallation', msg: isMs ?
+                                'Saya ingin install semula / format Windows baharu.' :
+                                'I want to reinstall/format Windows fresh.' },
+                        { name: isMs ? 'Format & Reinstall OS' : 'Format & Reinstall OS', msg: isMs ?
+                                'Komputer slow, saya nak format bersih semula seluruh sistem operasi.' :
+                                'My computer is slow, I want a clean format of the entire operating system.' }
+                    ]
+                },
+                maintenance: {
+                    title: isMs ? 'Servis Penyelenggaraan' : 'Maintenance Services',
+                    items: [
+                        { name: isMs ? 'Servis Pembersihan Laptop' : 'Laptop Cleaning Service', msg: isMs ?
+                                'Saya mahu hantar laptop untuk cuci habuk bahagian dalam.' :
+                                'I want to send my laptop for internal dust cleaning.' },
+                        { name: isMs ? 'Tukar Thermal Paste' : 'Thermal Paste Replacement', msg: isMs ?
+                                'Saya nak tukar thermal paste baru untuk turunkan suhu CPU.' :
+                                'I want to replace the thermal paste to lower CPU temperature.' },
+                        { name: isMs ? 'Servis Kipas (Fan Cleaning)' : 'Fan Cleaning Service', msg: isMs ?
+                                'Kipas laptop saya berbunyi bising / tidak berpusing lancar.' :
+                                'My laptop fan is noisy or not spinning smoothly.' },
+                        { name: isMs ? 'Pemeriksaan Kesihatan Komputer' : 'PC Health Check', msg: isMs ?
+                                'Mahu buat general check-up kesihatan hard disk dan sistem komputer.' :
+                                'I want a general health check for hard disk and computer system.' }
+                    ]
+                },
+                data_software: {
+                    title: isMs ? 'Data & Perisian' : 'Data & Software',
+                    items: [
+                        { name: isMs ? 'Backup Data' : 'Data Backup', msg: isMs ? 'Saya mahu buat backup data penting saya sebelum hilang.' :
+                                'I want to backup my important data before it\'s lost.' },
+                        { name: isMs ? 'Pemindahan Data (Transfer)' : 'Data Transfer', msg: isMs ?
+                                'Saya nak pindahkan semua data dari laptop lama ke laptop baru.' :
+                                'I want to transfer all data from old laptop to new laptop.' },
+                        { name: isMs ? 'Pemasangan Software' : 'Software Installation', msg: isMs ?
+                                'Saya memerlukan bantuan pemasangan software / aplikasi pejabat.' :
+                                'I need help installing software / office applications.' },
+                        { name: isMs ? 'Buang Virus & Malware' : 'Virus & Malware Removal', msg: isMs ?
+                                'Laptop saya kena virus, mahu buat pembersihan virus.' :
+                                'My laptop is infected with virus, I need virus cleaning.' }
+                    ]
+                },
+                networking: {
+                    title: isMs ? 'Networking & IT Support' : 'Networking & IT Support',
+                    items: [
+                        { name: isMs ? 'Setup Rangkaian (Networking)' : 'Network Setup', msg: isMs ?
+                                'Saya nak setup rangkaian kabel LAN/network di rumah atau pejabat.' :
+                                'I want to set up a LAN/network at home or office.' },
+                        { name: isMs ? 'Konfigurasi Router & WiFi' : 'Router & WiFi Configuration', msg: isMs ?
+                                'Masalah router / WiFi tidak stabil, perlukan konfigurasi semula.' :
+                                'Router / WiFi unstable, needs reconfiguration.' },
+                        { name: isMs ? 'IT Support Perniagaan' : 'Business IT Support', msg: isMs ?
+                                'Mahu berbincang tentang khidmat IT Support bulanan/ad-hoc untuk perniagaan kecil saya.' :
+                                'I want to discuss monthly/ad-hoc IT support for my small business.' }
+                    ]
+                },
+                printer: {
+                    title: isMs ? 'Printer Services' : 'Printer Services',
+                    items: [
+                        { name: isMs ? 'Servis / Repair Printer' : 'Printer Repair', msg: isMs ?
+                                'Printer saya ada masalah (paper jam / error / dakwat tidak keluar) dan perlu dibaiki.' :
+                                'My printer has issues (paper jam / error / ink not coming out) and needs repair.' },
+                        { name: isMs ? 'Servis Percetakan' : 'Printing Services', msg: isMs ? 'Ada khidmat print dokumen/percetakan?' :
+                                'Do you offer document printing services?' }
+                    ]
+                },
+                jualan: {
+                    title: isMs ? 'Jualan Peranti & Aksesori' : 'Sales & Accessories',
+                    items: [
+                        { name: isMs ? 'Beli Laptop Baru' : 'Buy New Laptop', msg: isMs ?
+                                'Saya sedang mencari laptop baharu di Synotech Computer Kuala Terengganu.' :
+                                'I\'m looking for a new laptop at Synotech Computer Kuala Terengganu.' },
+                        { name: isMs ? 'Beli Laptop Refurbished / Terpakai' : 'Buy Refurbished/Used Laptop', msg: isMs ?
+                                'Saya berminat untuk melihat stok laptop terpakai bajet rendah.' :
+                                'I\'m interested in low-budget used laptops.' },
+                        { name: isMs ? 'Custom Desktop PC' : 'Custom Desktop PC', msg: isMs ?
+                                'Saya nak pasang / custom spec komputer desktop mengikut bajet saya.' :
+                                'I want to build/custom spec a desktop PC based on my budget.' },
+                        { name: isMs ? 'Aksesori Komputer' : 'Computer Accessories', msg: isMs ?
+                                'Saya mencari aksesori tambahan (mouse, keyboard, kabel, adapter, dsb).' :
+                                'I\'m looking for extra accessories (mouse, keyboard, cables, adapters, etc).' }
+                    ]
+                },
+                advice: {
+                    title: isMs ? 'Pemeriksaan & Nasihat' : 'Consultation & Advice',
+                    items: [
+                        { name: isMs ? 'Semakan Sebelum Beli Laptop' : 'Pre-Purchase Laptop Check', msg: isMs ?
+                                'Saya perlukan nasihat spec laptop mana yang paling sesuai sebelum membeli.' :
+                                'I need advice on which laptop spec suits me before buying.' },
+                        { name: isMs ? 'Cadangan Spec Ikut Bajet' : 'Spec Recommendation by Budget', msg: isMs ?
+                                'Saya ada bajet tertentu, boleh bantu cadangkan spec terbaik?' :
+                                'I have a certain budget, can you suggest the best spec?' },
+                        { name: isMs ? 'Konsultasi Repair vs Upgrade' : 'Repair vs Upgrade Consultation', msg: isMs ?
+                                'Saya runsing sama ada mahu repair komputer lama atau upgrade sahaja. Boleh beri nasihat?' :
+                                'I\'m torn between repairing my old computer or upgrading. Any advice?' }
+                    ]
+                }
+            };
+            return data[catId] || null;
+        }
+
+        // ─── RENDER OPTIONS (main entry) ───
+
+        function renderOptions() {
+            const state = conversation.state;
+            const isMs = conversation.isMs;
+
+            // Clear
+            optionsButtons.innerHTML = '';
+
+            // Determine menu type
+            if (menuState.type === 'sub' && menuState.categoryId) {
+                renderSubMenu(menuState.categoryId);
+                return;
+            }
+
+            // State-based rendering
+            let stateLabel = '';
+            let stateOptions = [];
+
+            switch (state) {
+                case 'welcome':
+                case 'problem_gathering':
+                    stateLabel = isMs ? '📂 Kategori Servis' : '📂 Service Categories';
+                    // Show main categories
+                    renderMainCategories();
+                    return;
+                case 'clarifying':
+                    stateLabel = isMs ? '🔍 Maklumat Lanjut' : '🔍 More Info';
+                    stateOptions = getClarifyingOptions();
+                    break;
+                case 'solution':
+                    stateLabel = isMs ? '💡 Tindakan' : '💡 Actions';
+                    stateOptions = getSolutionOptions();
+                    break;
+                case 'booking':
+                    stateLabel = isMs ? '📋 Tempahan' : '📋 Booking';
+                    stateOptions = getBookingOptions();
+                    break;
+                case 'followup':
+                    stateLabel = isMs ? '💬 Susulan' : '💬 Follow-up';
+                    stateOptions = getFollowupOptions();
+                    break;
+                default:
+                    stateLabel = isMs ? '📂 Kategori Servis' : '📂 Service Categories';
+                    renderMainCategories();
+                    return;
+            }
+
+            // Render state menu with reset button
+            currentMenuLabel.textContent = stateLabel;
             optionsLabel.textContent = isMs ? '💡 Pilihan Pintar' : '💡 Smart Options';
-            optionsButtons.innerHTML = "";
+            menuState.type = 'state';
+            menuState.stateName = state;
 
-            mainItems.forEach(opt => {
+            // Reset button always first
+            addResetButton();
+
+            // Divider
+            const divider = document.createElement('div');
+            divider.className = 'menu-divider';
+            optionsButtons.appendChild(divider);
+
+            // State options
+            stateOptions.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className =
-                    "glass-btn-primary text-slate-700 rounded-xl text-xs font-semibold py-2 px-3 flex items-center gap-1 active:scale-95";
+                    `glass-btn-primary text-slate-700 rounded-xl text-xs font-semibold py-2 px-3 flex items-center gap-1 active:scale-95 ${opt.danger ? 'glass-btn-danger' : ''}`;
+                btn.innerHTML = opt.label;
+                if (opt.action) btn.onclick = opt.action;
+                optionsButtons.appendChild(btn);
+            });
+        }
+
+        // ─── render main categories ───
+
+        function renderMainCategories() {
+            const isMs = conversation.isMs;
+            currentMenuLabel.textContent = isMs ? '📂 Kategori Servis' : '📂 Service Categories';
+            optionsLabel.textContent = isMs ? '💡 Pilihan Pintar' : '💡 Smart Options';
+            menuState.type = 'main';
+            menuState.categoryId = null;
+
+            // Reset button
+            addResetButton();
+
+            const divider = document.createElement('div');
+            divider.className = 'menu-divider';
+            optionsButtons.appendChild(divider);
+
+            const cats = getMainCategories();
+            cats.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className =
+                    'glass-btn-primary text-slate-700 rounded-xl text-xs font-semibold py-2 px-3 flex items-center gap-1 active:scale-95';
                 btn.innerHTML = opt.label;
                 btn.onclick = () => {
-                    // convert to a natural language query
-                    const query = isMs ?
-                        `Saya berminat dengan perkhidmatan ${opt.label.replace(/^[^\s]+\s/, '')}` :
-                        `I'm interested in ${opt.label.replace(/^[^\s]+\s/, '')}`;
-                    userInput.value = query;
+                    menuState.type = 'sub';
+                    menuState.categoryId = opt.id;
+                    renderOptions();
+                };
+                optionsButtons.appendChild(btn);
+            });
+        }
+
+        // ─── render sub menu ───
+
+        function renderSubMenu(catId) {
+            const isMs = conversation.isMs;
+            const data = getSubItems(catId);
+            if (!data) {
+                renderMainCategories();
+                return;
+            }
+
+            currentMenuLabel.textContent = data.title;
+            optionsLabel.textContent = isMs ? '📋 Pilihan Servis' : '📋 Service Options';
+            menuState.type = 'sub';
+            menuState.categoryId = catId;
+
+            // Reset button
+            addResetButton();
+
+            // Back button
+            const backBtn = document.createElement('button');
+            backBtn.className =
+                'glass-btn-primary text-amber-600 hover:text-amber-700 rounded-xl text-xs font-bold py-2 px-3 active:scale-95';
+            backBtn.innerHTML = '🔙 ' + (isMs ? 'Kembali' : 'Back');
+            backBtn.onclick = () => {
+                menuState.type = 'main';
+                menuState.categoryId = null;
+                renderOptions();
+            };
+            optionsButtons.appendChild(backBtn);
+
+            const divider = document.createElement('div');
+            divider.className = 'menu-divider';
+            optionsButtons.appendChild(divider);
+
+            data.items.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className =
+                    'glass-btn-primary text-slate-700 rounded-xl text-xs font-medium py-2 px-3 active:scale-95';
+                btn.textContent = item.name;
+                btn.onclick = () => {
+                    // Send this as a user message
+                    const msg = item.msg || item.name;
+                    userInput.value = msg;
                     handleFormSubmit(new Event('submit'));
                 };
                 optionsButtons.appendChild(btn);
             });
+        }
+
+        // ─── state-specific options ───
+
+        function getClarifyingOptions() {
+            const isMs = conversation.isMs;
+            const options = [];
+
+            // Device types
+            const devices = isMs ?
+                ['Laptop', 'Desktop', 'Printer', 'Router', 'Tablet', 'Telefon'] :
+                ['Laptop', 'Desktop', 'Printer', 'Router', 'Tablet', 'Phone'];
+
+            devices.forEach(d => {
+                options.push({
+                    label: '📱 ' + d,
+                    action: () => {
+                        userInput.value = isMs ? `Saya guna ${d}` : `I'm using ${d}`;
+                        handleFormSubmit(new Event('submit'));
+                    }
+                });
+            });
+
+            // Urgency
+            options.push({
+                label: '⚡ ' + (isMs ? 'Urgent / Segera' : 'Urgent'),
+                action: () => {
+                    userInput.value = isMs ? 'Ini urgent, perlu cepat' : 'This is urgent, need fast';
+                    handleFormSubmit(new Event('submit'));
+                }
+            });
+            options.push({
+                label: '⏳ ' + (isMs ? 'Boleh Tunggu' : 'Can Wait'),
+                action: () => {
+                    userInput.value = isMs ? 'Boleh tunggu, tak urgent' : 'Can wait, not urgent';
+                    handleFormSubmit(new Event('submit'));
+                }
+            });
+
+            return options;
+        }
+
+        function getSolutionOptions() {
+            const isMs = conversation.isMs;
+            return [{
+                label: '📱 ' + (isMs ? 'Tempah Servis' : 'Book Service'),
+                action: () => {
+                    userInput.value = isMs ? 'Saya nak tempah servis' : 'I want to book a service';
+                    handleFormSubmit(new Event('submit'));
+                }
+            }, {
+                label: '❓ ' + (isMs ? 'Soalan Lain' : 'Other Question'),
+                action: () => {
+                    userInput.value = isMs ? 'Saya ada soalan lain' : 'I have another question';
+                    handleFormSubmit(new Event('submit'));
+                }
+            }, {
+                label: '✅ ' + (isMs ? 'Selesai' : 'Done'),
+                action: () => {
+                    userInput.value = isMs ? 'Selesai, terima kasih' : 'Done, thank you';
+                    handleFormSubmit(new Event('submit'));
+                }
+            }];
+        }
+
+        function getBookingOptions() {
+            const isMs = conversation.isMs;
+            return [{
+                label: '📲 ' + (isMs ? 'Hantar ke WhatsApp' : 'Send to WhatsApp'),
+                action: () => {
+                    // Trigger WhatsApp
+                    const waUrl = conversation.createWhatsAppUrl(conversation.context.problem || 'Saya perlukan servis komputer');
+                    window.open(waUrl, '_blank');
+                    // Also send a message
+                    userInput.value = isMs ? 'Saya dah hantar ke WhatsApp' : 'I\'ve sent to WhatsApp';
+                    handleFormSubmit(new Event('submit'));
+                }
+            }, {
+                label: '🔙 ' + (isMs ? 'Kembali' : 'Back'),
+                action: () => {
+                    conversation.state = 'solution';
+                    renderOptions();
+                    // Re-send the solution message
+                    const sol = conversation.generateSolution();
+                    appendMessage('bot', sol, true);
+                    setTimeout(updateQuickReplies, 300);
+                }
+            }];
+        }
+
+        function getFollowupOptions() {
+            const isMs = conversation.isMs;
+            return [{
+                label: '❓ ' + (isMs ? 'Soalan Lain' : 'Other Question'),
+                action: () => {
+                    userInput.value = isMs ? 'Saya ada soalan lain' : 'I have another question';
+                    handleFormSubmit(new Event('submit'));
+                }
+            }, {
+                label: '✅ ' + (isMs ? 'Selesai' : 'Done'),
+                action: () => {
+                    userInput.value = isMs ? 'Selesai, terima kasih' : 'Done, thank you';
+                    handleFormSubmit(new Event('submit'));
+                }
+            }];
+        }
+
+        // ─── reset button ───
+
+        function addResetButton() {
+            const isMs = conversation.isMs;
+            const resetBtn = document.createElement('button');
+            resetBtn.className =
+                'glass-btn-danger text-rose-700 hover:text-rose-800 rounded-xl text-xs font-bold py-2 px-3 flex items-center gap-1 active:scale-95';
+            resetBtn.innerHTML = '🔄 ' + (isMs ? 'Reset / Menu Utama' : 'Reset / Main Menu');
+            resetBtn.onclick = resetConversation;
+            optionsButtons.appendChild(resetBtn);
+        }
+
+        // ─── reset conversation ───
+
+        function resetConversation() {
+            conversation.reset();
+            chatHistory.innerHTML = '';
+            menuState.type = 'main';
+            menuState.categoryId = null;
+            const welcomeMsg = conversation.generateWelcomeResponse();
+            appendMessage('bot', welcomeMsg, true);
+            renderOptions();
+            updateToggleButtonText();
+            setTimeout(updateQuickReplies, 300);
+            // Close options if open
+            if (optionsExpanded) {
+                optionsContainer.classList.remove('expanded');
+                optionsExpanded = false;
+                updateToggleButtonText();
+            }
+        }
+
+        // ─── update quick replies ───
+
+        function updateQuickReplies() {
+            const state = conversation.state;
+            const isMs = conversation.isMs;
+            let suggestions = [];
+
+            switch (state) {
+                case 'welcome':
+                case 'problem_gathering':
+                    suggestions = isMs ?
+                        ['Laptop saya tak boleh ON', 'Komputer slow sangat', 'Printer macet', 'Nak upgrade SSD'] :
+                        ['My laptop won\'t turn on', 'Computer is very slow', 'Printer is jammed', 'Want to upgrade SSD'];
+                    break;
+                case 'clarifying':
+                    suggestions = isMs ?
+                        ['Saya guna laptop Dell', 'Masalah hardware', 'Masalah software', 'Urgent'] :
+                        ['I use Dell laptop', 'Hardware issue', 'Software issue', 'Urgent'];
+                    break;
+                case 'solution':
+                    suggestions = isMs ?
+                        ['Saya nak tempah servis', 'Ada soalan lain', 'Selesai'] :
+                        ['I want to book the service', 'I have another question', 'Done'];
+                    break;
+                case 'booking':
+                    suggestions = isMs ?
+                        ['Ya, hantar ke WhatsApp', 'Kembali'] :
+                        ['Yes, send to WhatsApp', 'Back'];
+                    break;
+                case 'followup':
+                    suggestions = isMs ?
+                        ['Ada soalan lain', 'Selesai'] :
+                        ['I have another question', 'Done'];
+                    break;
+                default:
+                    suggestions = isMs ?
+                        ['Laptop saya tak boleh ON', 'Komputer slow'] :
+                        ['My laptop won\'t turn on', 'Computer is slow'];
+            }
+
+            if (suggestions.length > 0) {
+                showQuickReplies(suggestions.slice(0, 4));
+            }
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1132,7 +1622,7 @@
                 optionsContainer.classList.add('expanded');
                 optionsToggleIcon.textContent = '✖';
                 optionsToggleText.textContent = conversation.isMs ? 'Tutup Menu' : 'Close Menu';
-                renderMainOptions();
+                renderOptions();
             } else {
                 optionsContainer.classList.remove('expanded');
                 optionsToggleIcon.textContent = '⚡';
@@ -1165,6 +1655,8 @@
             chatHistory.innerHTML = '';
             optionsContainer.classList.remove('expanded');
             optionsExpanded = false;
+            menuState.type = 'main';
+            menuState.categoryId = null;
             updateToggleButtonText();
             initBot();
         }
@@ -1182,60 +1674,31 @@
             appendMessage('user', text);
             isProcessing = true;
 
-            // Show typing indicator
             showTyping();
 
-            // Process with conversation engine
             setTimeout(() => {
                 removeTyping();
                 const response = conversation.processInput(text);
                 appendMessage('bot', response, true);
                 isProcessing = false;
 
-                // Update quick replies based on state
+                // Update options based on new state
+                renderOptions();
                 updateQuickReplies();
 
-                // Update options menu
-                renderMainOptions();
-
-                // If conversation is in a state where we should show the menu, expand it
-                if (conversation.state === 'welcome' || conversation.state === 'solution') {
+                // Auto-expand options in certain states
+                const state = conversation.state;
+                if (state === 'clarifying' || state === 'solution' || state === 'booking') {
                     if (!optionsExpanded) toggleOptions();
                 }
+
+                // If in welcome or problem_gathering, show main categories
+                if (state === 'welcome' || state === 'problem_gathering') {
+                    menuState.type = 'main';
+                    renderOptions();
+                }
+
             }, 800 + Math.random() * 600);
-        }
-
-        function updateQuickReplies() {
-            const state = conversation.state;
-            const isMs = conversation.isMs;
-
-            let suggestions = [];
-
-            if (state === 'welcome' || state === 'problem_gathering') {
-                suggestions = isMs ?
-                    ['Laptop saya tak boleh ON', 'Komputer slow sangat', 'Printer macet', 'Nak upgrade SSD'] :
-                    ['My laptop won\'t turn on', 'Computer is very slow', 'Printer is jammed', 'Want to upgrade SSD'];
-            } else if (state === 'clarifying') {
-                suggestions = isMs ?
-                    ['Dell / HP / Asus', 'Masalah hardware', 'Masalah software', 'Urgent / Tak urgent'] :
-                    ['Dell / HP / Asus', 'Hardware issue', 'Software issue', 'Urgent / Not urgent'];
-            } else if (state === 'solution') {
-                suggestions = isMs ?
-                    ['Saya nak tempah servis', 'Ada soalan lain', 'Terima kasih, itu sahaja'] :
-                    ['I want to book the service', 'I have another question', 'Thanks, that\'s all'];
-            } else if (state === 'booking') {
-                suggestions = isMs ?
-                    ['Ya, hantar ke WhatsApp', 'Tunggu sebentar', 'Saya ada soalan lain'] :
-                    ['Yes, send to WhatsApp', 'Wait a moment', 'I have another question'];
-            } else if (state === 'followup') {
-                suggestions = isMs ?
-                    ['Ada soalan lain', 'Saya dah selesai', 'Terima kasih'] :
-                    ['I have another question', 'I\'m done', 'Thank you'];
-            }
-
-            if (suggestions.length > 0) {
-                showQuickReplies(suggestions.slice(0, 4));
-            }
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1251,20 +1714,16 @@
         function initBot() {
             conversation.reset();
             conversation.lang = currentLang;
+            menuState.type = 'main';
+            menuState.categoryId = null;
             const welcomeMsg = conversation.generateWelcomeResponse();
             appendMessage('bot', welcomeMsg, true);
-            renderMainOptions();
+            renderOptions();
             updateToggleButtonText();
-
-            // Show quick replies for welcome
-            setTimeout(() => {
-                updateQuickReplies();
-            }, 500);
+            setTimeout(updateQuickReplies, 500);
         }
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  KEYBOARD SHORTCUT: Enter to submit
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ─── keyboard shortcut ───
 
         userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -1273,13 +1732,13 @@
             }
         });
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        //  GLOBAL EXPOSURE for onclick
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // ─── global exposure ───
+
         window.toggleOptions = toggleOptions;
         window.toggleLanguage = toggleLanguage;
         window.handleFormSubmit = handleFormSubmit;
-        window.renderMainOptions = renderMainOptions;
+        window.renderOptions = renderOptions;
+        window.resetConversation = resetConversation;
     </script>
 </body>
 </html>
